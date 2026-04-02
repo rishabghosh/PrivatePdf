@@ -72,7 +72,7 @@ RUN --mount=type=secret,id=VITE_CORS_PROXY_URL \
 
 # Production stage
 # TODO@ALAM: Change to quay once fixed
-FROM nginx:1.28.3-alpine-slim
+FROM nginx:1.29.7-alpine-slim
 
 LABEL org.opencontainers.image.source="https://github.com/alam00000/bentopdf"
 LABEL org.opencontainers.image.url="https://github.com/alam00000/bentopdf"
