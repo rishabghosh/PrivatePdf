@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Why You Shouldn't Upload PDFs to Random Websites | {{#if brandName}}{{brandName}}{{else}}BentoPDF{{/if}}</title>
+  <meta name="description" content="Most online PDF tools upload your files to their servers. Learn why this is a privacy risk and what alternatives exist that process files locally in your browser." />
+  <meta name="keywords" content="pdf privacy, pdf upload risk, private pdf tools, browser pdf editor, pdf security" />
+  <meta name="author" content="{{#if brandName}}{{brandName}}{{else}}BentoPDF{{/if}}" />
+  <meta name="robots" content="index, follow" />
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link href="../src/css/styles.css" rel="stylesheet" />
+</head>
+<body class="antialiased bg-gray-900">
+  {{> navbar }}
+
+  <article class="max-w-3xl mx-auto px-4 py-16">
+    <a href="../index.html" class="text-indigo-400 hover:text-indigo-300 text-sm mb-8 inline-block">← Back to Home</a>
+
+    <h1 class="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+      Why You Shouldn't Upload PDFs to Random Websites
+    </h1>
+    <p class="text-gray-400 text-sm mb-8">Published by the {{#if brandName}}{{brandName}}{{else}}BentoPDF{{/if}} team</p>
+
+    <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed space-y-6">
+
+      <p>
+        Every day, millions of people Google "merge PDF" or "compress PDF" and click the first result.
+        They upload their tax returns, employment contracts, medical records, and legal documents
+        to a website they've never heard of before. Most don't think twice about it.
+      </p>
+
+      <p>Here's what actually happens when you upload a PDF to a typical online tool:</p>
+
+      <h2 class="text-xl font-bold text-white mt-8 mb-4">What happens to your file</h2>
+
+      <p>
+        When you drag a PDF onto iLovePDF, Smallpdf, or most online PDF tools, the file is
+        transmitted over the internet to their servers. The server processes your file — merges it,
+        compresses it, converts it — and then sends the result back to you. Your original file
+        sits on their server until they delete it.
+      </p>
+
+      <p>
+        Most services claim to delete files within 1-2 hours. But here's the thing: you have
+        no way to verify that. You're trusting a company you found on Google five minutes ago
+        with potentially sensitive documents.
+      </p>
+
+      <h2 class="text-xl font-bold text-white mt-8 mb-4">The real risks</h2>
+
+      <p>
+        <strong class="text-white">Data breaches:</strong> If the service gets hacked,
+        your documents could be exposed. This isn't hypothetical — data breaches happen
+        to companies of every size, every year.
+      </p>
+
+      <p>
+        <strong class="text-white">Employee access:</strong> Even if the company has good
+        intentions, employees with server access could theoretically view your files.
+      </p>
+
+      <p>
+        <strong class="text-white">Third-party processing:</strong> Some services use
+        cloud providers like AWS or Google Cloud to process files. Your document might
+        pass through multiple systems before coming back to you.
+      </p>
+
+      <p>
+        <strong class="text-white">Metadata retention:</strong> Even if the file is deleted,
+        metadata (filename, file size, timestamps, your IP address) is often logged
+        and retained.
+      </p>
+
+      <h2 class="text-xl font-bold text-white mt-8 mb-4">The alternative: browser-based processing</h2>
+
+      <p>
+        Modern web technology has made it possible to process PDFs entirely in your browser.
+        Using WebAssembly (Wasm), the same libraries that power desktop PDF software can now
+        run at near-native speed inside a browser tab.
+      </p>
+
+      <p>
+        When you use a browser-based PDF tool, your file never leaves your device. The
+        processing happens on your CPU, in your browser's memory. When you close the tab,
+        everything is gone. There's no server, no upload, no risk of a data breach.
+      </p>
+
+      <h2 class="text-xl font-bold text-white mt-8 mb-4">How to verify a tool doesn't upload your files</h2>
+
+      <p>Here's a simple test you can do with any online PDF tool:</p>
+
+      <ol class="list-decimal list-inside space-y-2 text-gray-300">
+        <li>Open the tool in your browser</li>
+        <li>Press <kbd class="bg-gray-700 px-2 py-0.5 rounded text-sm">F12</kbd> to open Developer Tools</li>
+        <li>Go to the <strong class="text-white">Network</strong> tab</li>
+        <li>Clear the network log</li>
+        <li>Upload and process a PDF file</li>
+        <li>Look at the network requests</li>
+      </ol>
+
+      <p>
+        If you see large outgoing requests (matching your file size), the tool is uploading
+        your file. If you only see small requests for static assets, the tool is processing
+        locally.
+      </p>
+
+      <p>
+        Try this with <a href="../merge-pdf.html" class="text-indigo-400 hover:text-indigo-300">our merge tool</a>
+        — you'll see zero outgoing data requests. Then try it with any server-based tool and
+        compare the difference.
+      </p>
+
+      <h2 class="text-xl font-bold text-white mt-8 mb-4">Bottom line</h2>
+
+      <p>
+        If you're processing non-sensitive documents — a meme, a public flyer, a recipe —
+        it doesn't matter where you process them. But if you're handling contracts, financial
+        documents, medical records, legal papers, or anything you wouldn't want a stranger
+        to read, use a tool that processes files locally.
+      </p>
+
+      <p>
+        Your documents deserve the same privacy as the rest of your digital life.
+      </p>
+
+      <div class="mt-12 p-6 bg-gray-800 border border-gray-700 rounded-xl">
+        <h3 class="text-lg font-bold text-white mb-2">Try our privacy-first PDF tools</h3>
+        <p class="text-gray-400 text-sm mb-4">117+ tools. No uploads. No accounts. No limits.</p>
+        <div class="flex gap-3 flex-wrap">
+          <a href="../merge-pdf.html" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Merge PDF</a>
+          <a href="../compress-pdf.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Compress PDF</a>
+          <a href="../split-pdf.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Split PDF</a>
+          <a href="../index.html" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">All Tools</a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  {{> footer }}
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why You Shouldn't Upload PDFs to Random Websites",
+    "description": "Most online PDF tools upload your files to their servers. Learn about privacy risks and browser-based alternatives.",
+    "author": {"@type": "Organization", "name": "{{#if brandName}}{{brandName}}{{else}}BentoPDF{{/if}}"},
+    "publisher": {"@type": "Organization", "name": "{{#if brandName}}{{brandName}}{{else}}BentoPDF{{/if}}"}
+  }
+  </script>
+</body>
+</html>

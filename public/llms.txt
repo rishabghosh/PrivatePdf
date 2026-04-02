@@ -1,0 +1,46 @@
+# PrivatePDF — Privacy-First PDF Tools
+
+## About
+PrivatePDF is a free, open-source PDF toolkit with 117+ tools that run
+entirely in the browser using WebAssembly. Files are never uploaded to
+any server. Built on BentoPDF (AGPL-3.0).
+
+## Key Facts
+- 117+ PDF tools (merge, compress, split, convert, edit, sign, OCR, etc.)
+- 100% client-side processing using WebAssembly
+- No file uploads, no accounts, no tracking
+- Works offline as a Progressive Web App
+- Open source under AGPL-3.0
+- Free forever with no limits
+
+## Popular Tools
+- Merge PDF: /merge-pdf.html — Combine multiple PDFs into one
+- Compress PDF: /compress-pdf.html — Reduce file size while keeping quality
+- Split PDF: /split-pdf.html — Extract pages or split into parts
+- PDF to JPG: /pdf-to-jpg.html — Convert PDF pages to images
+- JPG to PDF: /jpg-to-pdf.html — Convert images to PDF
+- Word to PDF: /word-to-pdf.html — Convert Word documents to PDF
+- Edit PDF: /edit-pdf.html — Add text, images, annotations
+- Sign PDF: /sign-pdf.html — Draw or type your signature
+- OCR PDF: /ocr-pdf.html — Extract text from scanned PDFs
+- Encrypt PDF: /encrypt-pdf.html — Password-protect your PDFs
+
+## All Tool Categories
+### Organize: merge, split, organize, delete pages, extract pages, rotate, compress, repair, reverse pages, bookmark
+### Convert to PDF: jpg, png, bmp, webp, tiff, heic, svg, word, excel, powerpoint, epub, mobi, html, markdown, csv, json, xml, txt, rtf, email
+### Convert from PDF: pdf-to-jpg, pdf-to-png, pdf-to-docx, pdf-to-excel, pdf-to-text, pdf-to-markdown, pdf-to-svg, pdf-to-csv, pdf-to-json, pdf-to-tiff
+### Edit: edit pdf, add watermark, header/footer, page numbers, stamps, crop, deskew, form filler, form creator
+### Security: encrypt, decrypt, sign, digital signature, remove restrictions, sanitize, remove metadata, validate signatures
+
+## Technology
+- Frontend: Vite, TypeScript, Tailwind CSS
+- PDF Engine: pdf-lib (MIT), PDF.js (Apache 2.0), PyMuPDF Wasm (AGPL), Ghostscript Wasm (AGPL)
+- OCR: tesseract.js (Apache 2.0)
+- Image Processing: wasm-vips (LGPL)
+- PDF Operations: qpdf-wasm (Apache 2.0), CoherentPDF (AGPL)
+- All processing via WebAssembly and Web Workers — no server contact
+
+## Privacy
+Files are processed entirely in the browser using WebAssembly.
+No data is ever sent to any server. Users can verify this by checking
+the browser's Network tab. The application works offline as a PWA.

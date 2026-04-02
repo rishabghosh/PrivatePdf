@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Tools Online — 100% Private, No Upload Required | PrivatePDF</title>
+  <meta name="description" content="Free online PDF tools that run entirely in your browser. Merge, compress, split, convert PDFs with zero uploads. Your files never leave your device." />
+  <meta name="keywords" content="merge pdf, compress pdf, split pdf, pdf to jpg, online pdf tools, private pdf editor, no upload pdf" />
+  <link rel="canonical" href="https://yoursite.com/" />
+  <meta property="og:title" content="PrivatePDF — PDF Tools That Never Touch a Server" />
+  <meta property="og:description" content="117+ free PDF tools running 100% in your browser. No uploads. No accounts. No limits." />
+  <meta property="og:type" content="website" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --text: #1c1917;
+      --text-secondary: #78716c;
+      --accent: #059669;
+      --accent-light: #d1fae5;
+      --accent-dark: #047857;
+      --border: #e7e5e4;
+      --danger: #ef4444;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Instrument Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(250,250,249,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+    .nav-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .logo {
+      font-weight: 700; font-size: 18px; color: var(--text);
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+    }
+    .logo-icon {
+      width: 28px; height: 28px; background: var(--accent);
+      border-radius: 7px; display: grid; place-items: center;
+      color: white; font-size: 14px; font-weight: 700;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 14px; font-weight: 500;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .privacy-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--accent-light); color: var(--accent-dark);
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+    }
+    .privacy-badge::before {
+      content: ''; width: 6px; height: 6px;
+      background: var(--accent); border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* HERO */
+    .hero {
+      max-width: 1120px; margin: 0 auto;
+      padding: 80px 24px 60px;
+      text-align: center;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 6px 16px; border-radius: 20px;
+      font-size: 13px; color: var(--text-secondary);
+      margin-bottom: 24px; font-weight: 500;
+      box-shadow: var(--shadow-sm);
+    }
+    .hero-tag .shield { color: var(--accent); }
+    h1 {
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 700; line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+    }
+    h1 .highlight {
+      background: linear-gradient(135deg, var(--accent), #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; color: var(--text-secondary);
+      max-width: 560px; margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-proof {
+      display: flex; justify-content: center; gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+    .proof-item {
+      text-align: center;
+    }
+    .proof-number {
+      font-size: 28px; font-weight: 700; color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .proof-label {
+      font-size: 13px; color: var(--text-secondary); margin-top: 2px;
+    }
+
+    /* TOOL GRID */
+    .tools-section {
+      max-width: 1120px; margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .section-header {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 32px;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .section-title {
+      font-size: 24px; font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .section-link {
+      font-size: 14px; color: var(--accent);
+      text-decoration: none; font-weight: 600;
+    }
+    .section-link:hover { text-decoration: underline; }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-decoration: none; color: inherit;
+      transition: all 0.2s;
+      display: flex; align-items: flex-start; gap: 14px;
+      cursor: pointer;
+    }
+    .tool-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .tool-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .tool-card-body { flex: 1; min-width: 0; }
+    .tool-name {
+      font-size: 15px; font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .tool-desc {
+      font-size: 13px; color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ICON COLORS */
+    .icon-blue { background: #dbeafe; color: #2563eb; }
+    .icon-green { background: #d1fae5; color: #059669; }
+    .icon-orange { background: #ffedd5; color: #ea580c; }
+    .icon-purple { background: #ede9fe; color: #7c3aed; }
+    .icon-red { background: #fee2e2; color: #dc2626; }
+    .icon-teal { background: #ccfbf1; color: #0d9488; }
+    .icon-amber { background: #fef3c7; color: #d97706; }
+    .icon-pink { background: #fce7f3; color: #db2777; }
+
+    /* HOW IT WORKS */
+    .how-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 24px;
+    }
+    .how-inner {
+      max-width: 1120px; margin: 0 auto;
+    }
+    .how-title {
+      font-size: 24px; font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px; text-align: center;
+    }
+    .how-sub {
+      color: var(--text-secondary); text-align: center;
+      margin-bottom: 48px; font-size: 15px;
+    }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
+    }
+    .how-step {
+      text-align: center; padding: 24px 16px;
+    }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: inline-grid; place-items: center;
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .step-1 .step-num { background: #dbeafe; color: #2563eb; }
+    .step-2 .step-num { background: #d1fae5; color: #059669; }
+    .step-3 .step-num { background: #fef3c7; color: #d97706; }
+    .step-title {
+      font-size: 16px; font-weight: 600; margin-bottom: 8px;
+    }
+    .step-desc {
+      font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+    }
+
+    /* PRIVACY SECTION */
+    .privacy-section {
+      max-width: 1120px; margin: 0 auto;
+      padding: 80px 24px;
+    }
+    .privacy-card {
+      background: linear-gradient(135deg, #064e3b, #065f46);
+      border-radius: 20px;
+      padding: 56px 48px;
+      color: white;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .privacy-card h2 {
+      font-size: 32px; font-weight: 700;
+      line-height: 1.2; letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .privacy-card p {
+      color: #a7f3d0; font-size: 15px; line-height: 1.7;
+    }
+    .privacy-checks {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .check-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .check-icon {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #34d399; color: #064e3b;
+      display: grid; place-items: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* COMPARE TABLE */
+    .compare-section {
+      max-width: 800px; margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .compare-title {
+      font-size: 24px; font-weight: 700; text-align: center;
+      letter-spacing: -0.02em; margin-bottom: 32px;
+    }
+    .compare-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .compare-table th, .compare-table td {
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th {
+      background: #f5f5f4;
+      font-weight: 600; font-size: 13px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .compare-table td:first-child { font-weight: 500; }
+    .yes { color: var(--accent); font-weight: 600; }
+    .no { color: var(--danger); font-weight: 600; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table .highlight-col {
+      background: #f0fdf4;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .footer-inner {
+      max-width: 1120px; margin: 0 auto;
+    }
+    .footer-links {
+      display: flex; justify-content: center; gap: 24px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .privacy-card {
+        grid-template-columns: 1fr;
+        padding: 36px 28px;
+      }
+      .hero { padding: 48px 20px 40px; }
+      .hero-proof { gap: 24px; }
+      .nav-links { display: none; }
+      .tool-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ANIMATIONS */
+    .fade-up {
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">P</div>
+      PrivatePDF
+    </a>
+    <div class="nav-links">
+      <a href="/tools.html">All Tools</a>
+      <a href="/about.html">About</a>
+      <a href="/faq.html">FAQ</a>
+    </div>
+    <div class="privacy-badge">Client-Side Only</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="fade-up">
+    <div class="hero-tag">
+      <span class="shield">🛡️</span>
+      Your files never leave your device
+    </div>
+  </div>
+  <h1 class="fade-up delay-1">
+    PDF tools that<br><span class="highlight">respect your privacy</span>
+  </h1>
+  <p class="hero-sub fade-up delay-2">
+    117+ free tools — merge, compress, convert, edit — all running in your browser.
+    Zero uploads. Zero accounts. Zero limits.
+  </p>
+
+  <div class="hero-proof fade-up delay-3">
+    <div class="proof-item">
+      <div class="proof-number">117+</div>
+      <div class="proof-label">PDF Tools</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-number">0 bytes</div>
+      <div class="proof-label">Sent to servers</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-number">100%</div>
+      <div class="proof-label">Client-side</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-number">∞</div>
+      <div class="proof-label">Files, no limits</div>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR TOOLS -->
+<section class="tools-section">
+  <div class="section-header">
+    <h2 class="section-title">Most popular tools</h2>
+    <a href="/tools.html" class="section-link">View all 117+ tools →</a>
+  </div>
+  <div class="tool-grid">
+    <a href="/merge-pdf.html" class="tool-card">
+      <div class="tool-icon icon-blue">📎</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Merge PDF</div>
+        <div class="tool-desc">Combine multiple PDFs into one file. Drag to reorder.</div>
+      </div>
+    </a>
+    <a href="/compress-pdf.html" class="tool-card">
+      <div class="tool-icon icon-green">📦</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Compress PDF</div>
+        <div class="tool-desc">Reduce file size while keeping quality. Choose compression level.</div>
+      </div>
+    </a>
+    <a href="/split-pdf.html" class="tool-card">
+      <div class="tool-icon icon-orange">✂️</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Split PDF</div>
+        <div class="tool-desc">Extract pages or split into multiple documents.</div>
+      </div>
+    </a>
+    <a href="/pdf-to-jpg.html" class="tool-card">
+      <div class="tool-icon icon-purple">🖼️</div>
+      <div class="tool-card-body">
+        <div class="tool-name">PDF to JPG</div>
+        <div class="tool-desc">Convert each page to a high-quality image.</div>
+      </div>
+    </a>
+    <a href="/jpg-to-pdf.html" class="tool-card">
+      <div class="tool-icon icon-teal">📄</div>
+      <div class="tool-card-body">
+        <div class="tool-name">JPG to PDF</div>
+        <div class="tool-desc">Convert images to PDF. Supports JPG, PNG, WebP.</div>
+      </div>
+    </a>
+    <a href="/word-to-pdf.html" class="tool-card">
+      <div class="tool-icon icon-blue">📝</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Word to PDF</div>
+        <div class="tool-desc">Convert Word documents to PDF format instantly.</div>
+      </div>
+    </a>
+    <a href="/edit-pdf.html" class="tool-card">
+      <div class="tool-icon icon-amber">✏️</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Edit PDF</div>
+        <div class="tool-desc">Add text, images, annotations directly in the browser.</div>
+      </div>
+    </a>
+    <a href="/sign-pdf.html" class="tool-card">
+      <div class="tool-icon icon-pink">🖊️</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Sign PDF</div>
+        <div class="tool-desc">Draw or type your signature and place it anywhere.</div>
+      </div>
+    </a>
+    <a href="/rotate-pdf.html" class="tool-card">
+      <div class="tool-icon icon-red">🔄</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Rotate PDF</div>
+        <div class="tool-desc">Rotate pages 90°, 180°, or any custom angle.</div>
+      </div>
+    </a>
+    <a href="/ocr-pdf.html" class="tool-card">
+      <div class="tool-icon icon-purple">🔍</div>
+      <div class="tool-card-body">
+        <div class="tool-name">OCR PDF</div>
+        <div class="tool-desc">Extract text from scanned PDFs. Runs entirely in your browser.</div>
+      </div>
+    </a>
+    <a href="/pdf-to-docx.html" class="tool-card">
+      <div class="tool-icon icon-blue">📋</div>
+      <div class="tool-card-body">
+        <div class="tool-name">PDF to Word</div>
+        <div class="tool-desc">Convert PDFs to editable Word documents.</div>
+      </div>
+    </a>
+    <a href="/encrypt-pdf.html" class="tool-card">
+      <div class="tool-icon icon-green">🔒</div>
+      <div class="tool-card-body">
+        <div class="tool-name">Protect PDF</div>
+        <div class="tool-desc">Add password encryption to secure your documents.</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="how-inner">
+    <h2 class="how-title">How it works</h2>
+    <p class="how-sub">Three steps. No uploads. No waiting.</p>
+    <div class="how-grid">
+      <div class="how-step step-1">
+        <div class="step-num">1</div>
+        <div class="step-title">Select your file</div>
+        <div class="step-desc">Pick a PDF from your device. It stays right where it is — in your browser's memory.</div>
+      </div>
+      <div class="how-step step-2">
+        <div class="step-num">2</div>
+        <div class="step-title">Process locally</div>
+        <div class="step-desc">WebAssembly handles the heavy lifting at near-native speed. No servers involved.</div>
+      </div>
+      <div class="how-step step-3">
+        <div class="step-num">3</div>
+        <div class="step-title">Download result</div>
+        <div class="step-desc">Get your file instantly. Close the tab and everything is gone — nothing stored anywhere.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY SECTION -->
+<section class="privacy-section">
+  <div class="privacy-card">
+    <div>
+      <h2>Why we built this differently</h2>
+      <p>
+        Most online PDF tools upload your files to their servers for processing.
+        That means your tax returns, contracts, medical records, and private documents
+        pass through someone else's infrastructure. We think that's unnecessary.
+        Every tool here runs using WebAssembly in your browser — the same technology
+        that powers desktop apps, now running at near-native speed in a tab.
+      </p>
+    </div>
+    <div class="privacy-checks">
+      <div class="check-item">
+        <div class="check-icon">✓</div>
+        No file uploads — processing happens on your CPU
+      </div>
+      <div class="check-item">
+        <div class="check-icon">✓</div>
+        No accounts, no tracking, no cookies required
+      </div>
+      <div class="check-item">
+        <div class="check-icon">✓</div>
+        Works offline — install as a Progressive Web App
+      </div>
+      <div class="check-item">
+        <div class="check-icon">✓</div>
+        Open source — inspect the code yourself
+      </div>
+      <div class="check-item">
+        <div class="check-icon">✓</div>
+        No file size limits — your device is the only limit
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="compare-section">
+  <h2 class="compare-title">How we compare</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="highlight-col">PrivatePDF</th>
+        <th>iLovePDF</th>
+        <th>Smallpdf</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Files stay on device</td>
+        <td class="highlight-col yes">✓ Always</td>
+        <td class="no">✗ Uploaded</td>
+        <td class="no">✗ Uploaded</td>
+      </tr>
+      <tr>
+        <td>No account required</td>
+        <td class="highlight-col yes">✓ Yes</td>
+        <td class="yes">✓ Basic use</td>
+        <td class="no">✗ Required</td>
+      </tr>
+      <tr>
+        <td>No file size limits</td>
+        <td class="highlight-col yes">✓ Unlimited</td>
+        <td class="no">✗ 100MB free</td>
+        <td class="no">✗ 5MB free</td>
+      </tr>
+      <tr>
+        <td>Works offline</td>
+        <td class="highlight-col yes">✓ PWA</td>
+        <td class="no">✗ No</td>
+        <td class="no">✗ No</td>
+      </tr>
+      <tr>
+        <td>Open source</td>
+        <td class="highlight-col yes">✓ AGPL-3.0</td>
+        <td class="no">✗ Proprietary</td>
+        <td class="no">✗ Proprietary</td>
+      </tr>
+      <tr>
+        <td>Number of tools</td>
+        <td class="highlight-col"><strong>117+</strong></td>
+        <td>25+</td>
+        <td>20+</td>
+      </tr>
+      <tr>
+        <td>Price</td>
+        <td class="highlight-col"><strong>Free forever</strong></td>
+        <td>Freemium</td>
+        <td>Freemium</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ALL TOOLS CATEGORIES -->
+<section class="tools-section">
+  <div class="section-header">
+    <h2 class="section-title">All tools by category</h2>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+    <div>
+      <h3 style="font-size:15px; font-weight:600; margin-bottom:12px; color:var(--text-secondary);">📎 Organize</h3>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:14px;">
+        <a href="/merge-pdf.html" style="color:var(--text); text-decoration:none;">Merge PDF</a>
+        <a href="/split-pdf.html" style="color:var(--text); text-decoration:none;">Split PDF</a>
+        <a href="/organize-pdf.html" style="color:var(--text); text-decoration:none;">Organize Pages</a>
+        <a href="/delete-pages.html" style="color:var(--text); text-decoration:none;">Delete Pages</a>
+        <a href="/extract-pages.html" style="color:var(--text); text-decoration:none;">Extract Pages</a>
+        <a href="/rotate-pdf.html" style="color:var(--text); text-decoration:none;">Rotate PDF</a>
+        <a href="/reverse-pages.html" style="color:var(--text); text-decoration:none;">Reverse Pages</a>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:15px; font-weight:600; margin-bottom:12px; color:var(--text-secondary);">🔄 Convert to PDF</h3>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:14px;">
+        <a href="/jpg-to-pdf.html" style="color:var(--text); text-decoration:none;">JPG to PDF</a>
+        <a href="/png-to-pdf.html" style="color:var(--text); text-decoration:none;">PNG to PDF</a>
+        <a href="/word-to-pdf.html" style="color:var(--text); text-decoration:none;">Word to PDF</a>
+        <a href="/excel-to-pdf.html" style="color:var(--text); text-decoration:none;">Excel to PDF</a>
+        <a href="/powerpoint-to-pdf.html" style="color:var(--text); text-decoration:none;">PowerPoint to PDF</a>
+        <a href="/html-to-pdf.html" style="color:var(--text); text-decoration:none;">HTML to PDF</a>
+        <a href="/markdown-to-pdf.html" style="color:var(--text); text-decoration:none;">Markdown to PDF</a>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:15px; font-weight:600; margin-bottom:12px; color:var(--text-secondary);">📤 Convert from PDF</h3>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:14px;">
+        <a href="/pdf-to-jpg.html" style="color:var(--text); text-decoration:none;">PDF to JPG</a>
+        <a href="/pdf-to-png.html" style="color:var(--text); text-decoration:none;">PDF to PNG</a>
+        <a href="/pdf-to-docx.html" style="color:var(--text); text-decoration:none;">PDF to Word</a>
+        <a href="/pdf-to-excel.html" style="color:var(--text); text-decoration:none;">PDF to Excel</a>
+        <a href="/pdf-to-text.html" style="color:var(--text); text-decoration:none;">PDF to Text</a>
+        <a href="/pdf-to-markdown.html" style="color:var(--text); text-decoration:none;">PDF to Markdown</a>
+        <a href="/pdf-to-svg.html" style="color:var(--text); text-decoration:none;">PDF to SVG</a>
+      </div>
+    </div>
+    <div>
+      <h3 style="font-size:15px; font-weight:600; margin-bottom:12px; color:var(--text-secondary);">🔒 Security</h3>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:14px;">
+        <a href="/encrypt-pdf.html" style="color:var(--text); text-decoration:none;">Encrypt PDF</a>
+        <a href="/decrypt-pdf.html" style="color:var(--text); text-decoration:none;">Decrypt PDF</a>
+        <a href="/sign-pdf.html" style="color:var(--text); text-decoration:none;">Sign PDF</a>
+        <a href="/digital-sign-pdf.html" style="color:var(--text); text-decoration:none;">Digital Signature</a>
+        <a href="/remove-restrictions.html" style="color:var(--text); text-decoration:none;">Remove Restrictions</a>
+        <a href="/sanitize-pdf.html" style="color:var(--text); text-decoration:none;">Sanitize PDF</a>
+        <a href="/remove-metadata.html" style="color:var(--text); text-decoration:none;">Remove Metadata</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="/about.html">About</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="https://github.com/YOUR_USERNAME/bentopdf" target="_blank">GitHub</a>
+    </div>
+    <p>
+      Built on <a href="https://github.com/alam00000/bentopdf" target="_blank">BentoPDF</a> (open source, AGPL-3.0).
+      Your files never leave your device.
+    </p>
+  </div>
+</footer>
+
+<!-- STRUCTURED DATA FOR SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "PrivatePDF",
+  "url": "https://yoursite.com",
+  "description": "117+ free online PDF tools that run entirely in your browser. No uploads, no accounts, no limits.",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": ["Merge PDF", "Compress PDF", "Split PDF", "PDF to JPG", "JPG to PDF", "Word to PDF", "Edit PDF", "Sign PDF", "OCR PDF", "Encrypt PDF"]
+}
+</script>
+
+</body>
+</html>
