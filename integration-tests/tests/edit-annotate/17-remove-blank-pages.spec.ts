@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Remove Blank Pages', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'remove-blank-pages');
-    await expect(page.locator('h1')).toContainText(/blank/i);
+    await expect(page.locator('h1').first()).toContainText(/blank/i);
   });
 
   test('upload PDF with blank pages and detect them', async ({ page }) => {

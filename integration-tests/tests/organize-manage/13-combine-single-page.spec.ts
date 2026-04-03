@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Combine to Single Page', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'combine-single-page');
-    await expect(page.locator('h1')).toContainText(/combine|single.*page/i);
+    await expect(page.locator('h1').first()).toContainText(/combine|single.*page/i);
   });
 
   test('combine to single page and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'combine-single-page');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

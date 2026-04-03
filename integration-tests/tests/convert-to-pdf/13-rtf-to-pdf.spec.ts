@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('RTF to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'rtf-to-pdf');
-    await expect(page.locator('h1')).toContainText(/rtf.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/rtf.*pdf/i);
   });
 
   test('convert RTF to PDF', async ({ page }) => {

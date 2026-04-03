@@ -4,7 +4,7 @@ import { navigateToTool, uploadTwoFiles, expectFileUploaded, fixtures } from '..
 test.describe('Compare PDFs', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'compare-pdfs');
-    await expect(page.locator('h1')).toContainText(/compare/i);
+    await expect(page.locator('h1').first()).toContainText(/compare/i);
   });
 
   test('upload two PDFs for comparison', async ({ page }) => {

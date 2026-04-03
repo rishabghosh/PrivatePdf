@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Font to Outline', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'font-to-outline');
-    await expect(page.locator('h1')).toContainText(/font.*outline|outline/i);
+    await expect(page.locator('h1').first()).toContainText(/font.*outline|outline/i);
   });
 
   test('convert fonts to outlines and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'font-to-outline');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

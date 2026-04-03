@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Repair PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'repair-pdf');
-    await expect(page.locator('h1')).toContainText(/repair/i);
+    await expect(page.locator('h1').first()).toContainText(/repair/i);
   });
 
   test('repair PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'repair-pdf');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

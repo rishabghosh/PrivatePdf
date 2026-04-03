@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Encrypt PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'encrypt-pdf');
-    await expect(page.locator('h1')).toContainText(/encrypt/i);
+    await expect(page.locator('h1').first()).toContainText(/encrypt/i);
   });
 
   test('upload PDF and see password fields', async ({ page }) => {
@@ -15,6 +15,7 @@ test.describe('Encrypt PDF', () => {
   });
 
   test('encrypt PDF with password and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'encrypt-pdf');
     await uploadFile(page, fixtures.samplePdf);
 

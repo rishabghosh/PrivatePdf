@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('JSON to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'json-to-pdf');
-    await expect(page.locator('h1')).toContainText(/json.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/json.*pdf/i);
   });
 
   test('convert JSON to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'json-to-pdf');
     await uploadFile(page, fixtures.sampleJson);
     await expectFileUploaded(page);

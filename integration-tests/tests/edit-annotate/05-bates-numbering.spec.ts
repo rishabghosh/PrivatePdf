@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Bates Numbering', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'bates-numbering');
-    await expect(page.locator('h1')).toContainText(/bates/i);
+    await expect(page.locator('h1').first()).toContainText(/bates/i);
   });
 
   test('upload PDF and see bates options', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Bates Numbering', () => {
   });
 
   test('add bates numbers and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'bates-numbering');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

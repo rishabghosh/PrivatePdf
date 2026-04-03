@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Table of Contents', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'table-of-contents');
-    await expect(page.locator('h1')).toContainText(/table of contents/i);
+    await expect(page.locator('h1').first()).toContainText(/table of contents/i);
   });
 
   test('upload PDF and see TOC options', async ({ page }) => {

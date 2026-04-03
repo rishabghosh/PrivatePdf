@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Edit Bookmarks', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'bookmark');
-    await expect(page.locator('h1')).toContainText(/bookmark/i);
+    await expect(page.locator('h1').first()).toContainText(/bookmark/i);
   });
 
   test('upload PDF and see bookmark editor', async ({ page }) => {

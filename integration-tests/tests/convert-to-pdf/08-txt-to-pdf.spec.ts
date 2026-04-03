@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Text to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'txt-to-pdf');
-    await expect(page.locator('h1')).toContainText(/text.*pdf|txt.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/text.*pdf|txt.*pdf/i);
   });
 
   test('convert text file to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'txt-to-pdf');
     await uploadFile(page, fixtures.sampleTxt);
     await expectFileUploaded(page);

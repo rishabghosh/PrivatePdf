@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Divide Pages', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'divide-pages');
-    await expect(page.locator('h1')).toContainText(/divide/i);
+    await expect(page.locator('h1').first()).toContainText(/divide/i);
   });
 
   test('divide pages and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'divide-pages');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

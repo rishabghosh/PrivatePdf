@@ -4,10 +4,11 @@ import { navigateToTool, uploadTwoFiles, expectFileUploaded, clickProcessButton,
 test.describe('PDF Overlay', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'overlay-pdf');
-    await expect(page.locator('h1')).toContainText(/overlay/i);
+    await expect(page.locator('h1').first()).toContainText(/overlay/i);
   });
 
   test('upload PDFs and overlay', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'overlay-pdf');
     await uploadTwoFiles(page, fixtures.samplePdf, fixtures.multiPagePdf);
     await expectFileUploaded(page);

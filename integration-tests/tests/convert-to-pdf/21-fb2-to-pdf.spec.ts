@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('FB2 to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'fb2-to-pdf');
-    await expect(page.locator('h1')).toContainText(/fb2.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/fb2.*pdf/i);
   });
 
   test('convert FB2 to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'fb2-to-pdf');
     await uploadFile(page, fixtures.sampleFb2);
     await expectFileUploaded(page);

@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Compress PDF', () => {
   test('page loads with compress heading', async ({ page }) => {
     await navigateToTool(page, 'compress-pdf');
-    await expect(page.locator('h1')).toContainText(/compress/i);
+    await expect(page.locator('h1').first()).toContainText(/compress/i);
   });
 
   test('upload PDF and see compression options', async ({ page }) => {

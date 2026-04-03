@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('XPS to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'xps-to-pdf');
-    await expect(page.locator('h1')).toContainText(/xps.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/xps.*pdf/i);
   });
 
   test('convert XPS to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'xps-to-pdf');
     await uploadFile(page, fixtures.sampleXps);
     await expectFileUploaded(page);

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Rasterize PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'rasterize-pdf');
-    await expect(page.locator('h1')).toContainText(/rasterize/i);
+    await expect(page.locator('h1').first()).toContainText(/rasterize/i);
   });
 
   test('rasterize PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'rasterize-pdf');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

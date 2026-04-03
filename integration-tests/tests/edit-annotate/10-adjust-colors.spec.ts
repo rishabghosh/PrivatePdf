@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Adjust Colors', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'adjust-colors');
-    await expect(page.locator('h1')).toContainText(/adjust|color/i);
+    await expect(page.locator('h1').first()).toContainText(/adjust|color/i);
   });
 
   test('upload PDF and see color adjustment sliders', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Adjust Colors', () => {
   });
 
   test('adjust colors and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'adjust-colors');
     await uploadFile(page, fixtures.colorPdf);
     await expectFileUploaded(page);

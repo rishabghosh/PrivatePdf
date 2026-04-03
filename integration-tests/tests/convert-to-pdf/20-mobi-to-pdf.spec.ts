@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('MOBI to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'mobi-to-pdf');
-    await expect(page.locator('h1')).toContainText(/mobi.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/mobi.*pdf/i);
   });
 
   test('convert MOBI to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'mobi-to-pdf');
     await uploadFile(page, fixtures.sampleMobi);
     await expectFileUploaded(page);

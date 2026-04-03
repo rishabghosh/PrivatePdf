@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Header & Footer', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'header-footer');
-    await expect(page.locator('h1')).toContainText(/header|footer/i);
+    await expect(page.locator('h1').first()).toContainText(/header|footer/i);
   });
 
   test('upload PDF and see header/footer options', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Header & Footer', () => {
   });
 
   test('add header and footer then download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'header-footer');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

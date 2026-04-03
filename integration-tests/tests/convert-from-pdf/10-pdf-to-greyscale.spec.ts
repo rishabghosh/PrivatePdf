@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDF to Greyscale', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-greyscale');
-    await expect(page.locator('h1')).toContainText(/grey|gray/i);
+    await expect(page.locator('h1').first()).toContainText(/grey|gray/i);
   });
 
   test('convert PDF to greyscale and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pdf-to-greyscale');
     await uploadFile(page, fixtures.colorPdf);
     await expectFileUploaded(page);

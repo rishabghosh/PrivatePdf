@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDF to JPG', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-jpg');
-    await expect(page.locator('h1')).toContainText(/pdf.*jpg/i);
+    await expect(page.locator('h1').first()).toContainText(/pdf.*jpg/i);
   });
 
   test('upload PDF and see conversion options', async ({ page }) => {

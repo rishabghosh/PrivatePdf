@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDF to CSV', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-csv');
-    await expect(page.locator('h1')).toContainText(/pdf.*csv/i);
+    await expect(page.locator('h1').first()).toContainText(/pdf.*csv/i);
   });
 
   test('convert PDF with tables to CSV', async ({ page }) => {

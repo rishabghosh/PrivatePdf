@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Merge PDF', () => {
   test('page loads with merge heading', async ({ page }) => {
     await navigateToTool(page, 'merge-pdf');
-    await expect(page.locator('h1')).toContainText(/merge/i);
+    await expect(page.locator('h1').first()).toContainText(/merge/i);
   });
 
   test('upload multiple PDFs and see file list', async ({ page }) => {

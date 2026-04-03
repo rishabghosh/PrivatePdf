@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('EPUB to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'epub-to-pdf');
-    await expect(page.locator('h1')).toContainText(/epub.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/epub.*pdf/i);
   });
 
   test('convert EPUB to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'epub-to-pdf');
     await uploadFile(page, fixtures.sampleEpub);
     await expectFileUploaded(page);

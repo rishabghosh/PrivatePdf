@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Images to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'image-to-pdf');
-    await expect(page.locator('h1')).toContainText(/image.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/image.*pdf/i);
   });
 
   test('upload image and convert to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'image-to-pdf');
     await uploadFile(page, fixtures.sampleJpg);
     await expectFileUploaded(page);

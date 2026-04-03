@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, fixtures } from '../../
 test.describe('View Metadata', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'view-metadata');
-    await expect(page.locator('h1')).toContainText(/view.*metadata/i);
+    await expect(page.locator('h1').first()).toContainText(/view.*metadata/i);
   });
 
   test('upload PDF and see metadata', async ({ page }) => {

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('WPD to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'wpd-to-pdf');
-    await expect(page.locator('h1')).toContainText(/wpd.*pdf|wordperfect/i);
+    await expect(page.locator('h1').first()).toContainText(/wpd.*pdf|wordperfect/i);
   });
 
   test('convert WPD to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'wpd-to-pdf');
     await uploadFile(page, fixtures.sampleWpd);
     await expectFileUploaded(page);

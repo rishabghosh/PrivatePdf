@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, fixtures } from '../../
 test.describe('Page Dimensions', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'page-dimensions');
-    await expect(page.locator('h1')).toContainText(/dimension/i);
+    await expect(page.locator('h1').first()).toContainText(/dimension/i);
   });
 
   test('upload PDF and see dimension info', async ({ page }) => {

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('SVG to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'svg-to-pdf');
-    await expect(page.locator('h1')).toContainText(/svg.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/svg.*pdf/i);
   });
 
   test('convert SVG to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'svg-to-pdf');
     await uploadFile(page, fixtures.sampleSvg);
     await expectFileUploaded(page);

@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Timestamp PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'timestamp-pdf');
-    await expect(page.locator('h1')).toContainText(/timestamp/i);
+    await expect(page.locator('h1').first()).toContainText(/timestamp/i);
   });
 
   test('upload PDF and see timestamp options', async ({ page }) => {

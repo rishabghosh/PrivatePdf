@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Split PDF', () => {
   test('page loads with split heading', async ({ page }) => {
     await navigateToTool(page, 'split-pdf');
-    await expect(page.locator('h1')).toContainText(/split/i);
+    await expect(page.locator('h1').first()).toContainText(/split/i);
   });
 
   test('upload PDF and see page range options', async ({ page }) => {
@@ -14,15 +14,14 @@ test.describe('Split PDF', () => {
   });
 
   test('split PDF with page range and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'split-pdf');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);
 
-    // Try to set a page range
-    const rangeInput = page.locator('input[type="text"][placeholder*="1"], input[id*="range"], input[id*="pages"]').first();
-    if (await rangeInput.isVisible().catch(() => false)) {
-      await rangeInput.fill('1-5');
-    }
+    // Fill in the page range (required before processing)
+    const rangeInput = page.locator('#page-range-input, input[id*="range"], input[placeholder*="1"]').first();
+    await rangeInput.fill('1-5');
 
     const download = await waitForDownload(page, async () => {
       await clickProcessButton(page);
@@ -35,6 +34,10 @@ test.describe('Split PDF', () => {
     await navigateToTool(page, 'split-pdf');
     await uploadFile(page, fixtures.largePdf);
     await expectFileUploaded(page);
+
+    // Fill in page range
+    const rangeInput = page.locator('#page-range-input, input[id*="range"], input[placeholder*="1"]').first();
+    await rangeInput.fill('1-50');
 
     const download = await waitForDownload(page, async () => {
       await clickProcessButton(page);

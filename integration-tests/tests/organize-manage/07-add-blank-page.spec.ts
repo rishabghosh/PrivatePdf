@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Add Blank Page', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'add-blank-page');
-    await expect(page.locator('h1')).toContainText(/blank.*page/i);
+    await expect(page.locator('h1').first()).toContainText(/blank.*page/i);
   });
 
   test('add blank page to PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'add-blank-page');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

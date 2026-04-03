@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('ODS to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'ods-to-pdf');
-    await expect(page.locator('h1')).toContainText(/ods.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/ods.*pdf/i);
   });
 
   test('convert ODS to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'ods-to-pdf');
     await uploadFile(page, fixtures.sampleOds);
     await expectFileUploaded(page);

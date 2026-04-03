@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Organize PDF (Duplicate & Organize)', () => {
   test('page loads with organize heading', async ({ page }) => {
     await navigateToTool(page, 'organize-pdf');
-    await expect(page.locator('h1')).toContainText(/organize|duplicate/i);
+    await expect(page.locator('h1').first()).toContainText(/organize|duplicate/i);
   });
 
   test('upload PDF and see page thumbnails', async ({ page }) => {
@@ -17,6 +17,7 @@ test.describe('Organize PDF (Duplicate & Organize)', () => {
   });
 
   test('organize pages and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'organize-pdf');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

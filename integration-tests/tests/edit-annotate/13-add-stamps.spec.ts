@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Add Stamps', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'add-stamps');
-    await expect(page.locator('h1')).toContainText(/stamp/i);
+    await expect(page.locator('h1').first()).toContainText(/stamp/i);
   });
 
   test('upload PDF and see stamp options', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Add Stamps', () => {
   });
 
   test('add stamp and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'add-stamps');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

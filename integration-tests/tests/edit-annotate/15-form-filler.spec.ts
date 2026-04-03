@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, fixtures } from '../../
 test.describe('PDF Form Filler', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'form-filler');
-    await expect(page.locator('h1')).toContainText(/form.*filler|fill.*form/i);
+    await expect(page.locator('h1').first()).toContainText(/form.*filler|fill.*form/i);
   });
 
   test('upload form PDF and see fields', async ({ page }) => {

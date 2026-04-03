@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Excel to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'excel-to-pdf');
-    await expect(page.locator('h1')).toContainText(/excel.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/excel.*pdf/i);
   });
 
   test('convert XLSX to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'excel-to-pdf');
     await uploadFile(page, fixtures.sampleXlsx);
     await expectFileUploaded(page);

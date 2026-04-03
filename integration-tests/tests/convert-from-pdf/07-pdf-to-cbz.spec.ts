@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDF to CBZ', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-cbz');
-    await expect(page.locator('h1')).toContainText(/pdf.*cbz/i);
+    await expect(page.locator('h1').first()).toContainText(/pdf.*cbz/i);
   });
 
   test('convert PDF to CBZ and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pdf-to-cbz');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

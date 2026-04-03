@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Linearize PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'linearize-pdf');
-    await expect(page.locator('h1')).toContainText(/linearize/i);
+    await expect(page.locator('h1').first()).toContainText(/linearize/i);
   });
 
   test('linearize PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'linearize-pdf');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

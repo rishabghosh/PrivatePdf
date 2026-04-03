@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PSD to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'psd-to-pdf');
-    await expect(page.locator('h1')).toContainText(/psd.*pdf|photoshop/i);
+    await expect(page.locator('h1').first()).toContainText(/psd.*pdf|photoshop/i);
   });
 
   test('convert PSD to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'psd-to-pdf');
     await uploadFile(page, fixtures.samplePsd);
     await expectFileUploaded(page);

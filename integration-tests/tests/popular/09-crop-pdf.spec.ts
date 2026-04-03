@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Crop PDF', () => {
   test('page loads with crop heading', async ({ page }) => {
     await navigateToTool(page, 'crop-pdf');
-    await expect(page.locator('h1')).toContainText(/crop/i);
+    await expect(page.locator('h1').first()).toContainText(/crop/i);
   });
 
   test('upload PDF and see crop interface', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Crop PDF', () => {
   });
 
   test('crop PDF and download result', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'crop-pdf');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

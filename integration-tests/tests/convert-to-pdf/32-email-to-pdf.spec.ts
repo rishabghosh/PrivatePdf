@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Email to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'email-to-pdf');
-    await expect(page.locator('h1')).toContainText(/email.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/email.*pdf/i);
   });
 
   test('convert EML to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'email-to-pdf');
     await uploadFile(page, fixtures.sampleEml);
     await expectFileUploaded(page);

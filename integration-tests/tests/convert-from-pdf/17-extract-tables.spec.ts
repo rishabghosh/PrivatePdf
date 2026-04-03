@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Extract Tables', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'extract-tables');
-    await expect(page.locator('h1')).toContainText(/extract.*table/i);
+    await expect(page.locator('h1').first()).toContainText(/extract.*table/i);
   });
 
   test('extract tables from PDF', async ({ page }) => {

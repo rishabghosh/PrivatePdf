@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Add Attachments', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'add-attachments');
-    await expect(page.locator('h1')).toContainText(/attachment/i);
+    await expect(page.locator('h1').first()).toContainText(/attachment/i);
   });
 
   test('upload PDF and add attachment', async ({ page }) => {

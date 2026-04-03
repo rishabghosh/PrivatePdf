@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Change Permissions', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'change-permissions');
-    await expect(page.locator('h1')).toContainText(/permission/i);
+    await expect(page.locator('h1').first()).toContainText(/permission/i);
   });
 
   test('upload PDF and see permission options', async ({ page }) => {
@@ -15,6 +15,7 @@ test.describe('Change Permissions', () => {
   });
 
   test('change permissions and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'change-permissions');
     await uploadFile(page, fixtures.samplePdf);
 

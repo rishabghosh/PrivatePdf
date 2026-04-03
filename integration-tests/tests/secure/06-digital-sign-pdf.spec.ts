@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, fixtures } from '../../
 test.describe('Digital Signature', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'digital-sign-pdf');
-    await expect(page.locator('h1')).toContainText(/digital.*sign/i);
+    await expect(page.locator('h1').first()).toContainText(/digital.*sign/i);
   });
 
   test('upload PDF and see signing options', async ({ page }) => {

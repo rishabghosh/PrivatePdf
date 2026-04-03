@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, fixtures } from '../../helpers/test-helpers
 test.describe('PDF Editor', () => {
   test('page loads with editor heading', async ({ page }) => {
     await navigateToTool(page, 'edit-pdf');
-    await expect(page.locator('h1')).toContainText(/editor/i);
+    await expect(page.locator('h1').first()).toContainText(/editor/i);
   });
 
   test('upload PDF and see editor canvas', async ({ page }) => {

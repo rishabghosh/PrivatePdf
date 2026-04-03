@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('OCR PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'ocr-pdf');
-    await expect(page.locator('h1')).toContainText(/ocr/i);
+    await expect(page.locator('h1').first()).toContainText(/ocr/i);
   });
 
   test('upload scanned PDF and see OCR options', async ({ page }) => {

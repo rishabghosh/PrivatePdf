@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, waitForDownload, expect
 test.describe('PDF Booklet', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-booklet');
-    await expect(page.locator('h1')).toContainText(/booklet/i);
+    await expect(page.locator('h1').first()).toContainText(/booklet/i);
   });
 
   test('create booklet and download', async ({ page }) => {

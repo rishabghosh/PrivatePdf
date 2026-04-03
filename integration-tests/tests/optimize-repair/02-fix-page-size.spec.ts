@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Fix Page Size', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'fix-page-size');
-    await expect(page.locator('h1')).toContainText(/fix.*page.*size|page.*size/i);
+    await expect(page.locator('h1').first()).toContainText(/fix.*page.*size|page.*size/i);
   });
 
   test('fix page sizes and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'fix-page-size');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

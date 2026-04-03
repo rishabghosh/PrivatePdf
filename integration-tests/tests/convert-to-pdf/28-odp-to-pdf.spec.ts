@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('ODP to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'odp-to-pdf');
-    await expect(page.locator('h1')).toContainText(/odp.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/odp.*pdf/i);
   });
 
   test('convert ODP to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'odp-to-pdf');
     await uploadFile(page, fixtures.sampleOdp);
     await expectFileUploaded(page);

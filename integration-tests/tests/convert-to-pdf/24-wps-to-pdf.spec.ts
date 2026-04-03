@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('WPS to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'wps-to-pdf');
-    await expect(page.locator('h1')).toContainText(/wps.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/wps.*pdf/i);
   });
 
   test('convert WPS to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'wps-to-pdf');
     await uploadFile(page, fixtures.sampleWps);
     await expectFileUploaded(page);

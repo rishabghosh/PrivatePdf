@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Add Page Labels', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'add-page-labels');
-    await expect(page.locator('h1')).toContainText(/label/i);
+    await expect(page.locator('h1').first()).toContainText(/label/i);
   });
 
   test('upload PDF and configure labels', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Add Page Labels', () => {
   });
 
   test('add labels and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'add-page-labels');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

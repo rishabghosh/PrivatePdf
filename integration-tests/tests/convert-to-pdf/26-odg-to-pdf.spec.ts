@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('ODG to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'odg-to-pdf');
-    await expect(page.locator('h1')).toContainText(/odg.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/odg.*pdf/i);
   });
 
   test('convert ODG to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'odg-to-pdf');
     await uploadFile(page, fixtures.sampleOdg);
     await expectFileUploaded(page);

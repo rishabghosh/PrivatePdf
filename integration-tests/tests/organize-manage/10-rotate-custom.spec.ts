@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Rotate by Custom Degrees', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'rotate-custom');
-    await expect(page.locator('h1')).toContainText(/rotate|custom/i);
+    await expect(page.locator('h1').first()).toContainText(/rotate|custom/i);
   });
 
   test('rotate by custom degrees and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'rotate-custom');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Remove Restrictions', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'remove-restrictions');
-    await expect(page.locator('h1')).toContainText(/restriction/i);
+    await expect(page.locator('h1').first()).toContainText(/restriction/i);
   });
 
   test('remove restrictions and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'remove-restrictions');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

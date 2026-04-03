@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Extract Pages', () => {
   test('page loads with extract pages heading', async ({ page }) => {
     await navigateToTool(page, 'extract-pages');
-    await expect(page.locator('h1')).toContainText(/extract/i);
+    await expect(page.locator('h1').first()).toContainText(/extract/i);
   });
 
   test('upload PDF and see page selection', async ({ page }) => {

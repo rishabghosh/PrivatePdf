@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Sanitize PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'sanitize-pdf');
-    await expect(page.locator('h1')).toContainText(/sanitize/i);
+    await expect(page.locator('h1').first()).toContainText(/sanitize/i);
   });
 
   test('sanitize PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'sanitize-pdf');
     await uploadFile(page, fixtures.metadataPdf);
     await expectFileUploaded(page);

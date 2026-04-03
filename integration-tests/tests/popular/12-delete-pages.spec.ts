@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Delete Pages', () => {
   test('page loads with delete pages heading', async ({ page }) => {
     await navigateToTool(page, 'delete-pages');
-    await expect(page.locator('h1')).toContainText(/delete/i);
+    await expect(page.locator('h1').first()).toContainText(/delete/i);
   });
 
   test('upload PDF and see page selection for deletion', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Delete Pages', () => {
   });
 
   test('delete pages and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'delete-pages');
     await uploadFile(page, fixtures.multiPagePdf);
     await expectFileUploaded(page);

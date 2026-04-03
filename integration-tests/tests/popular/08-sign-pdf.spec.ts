@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, fixtures } from '../../helpers/test-helpers
 test.describe('Sign PDF', () => {
   test('page loads with sign heading', async ({ page }) => {
     await navigateToTool(page, 'sign-pdf');
-    await expect(page.locator('h1')).toContainText(/sign/i);
+    await expect(page.locator('h1').first()).toContainText(/sign/i);
   });
 
   test('upload PDF and see signing options', async ({ page }) => {

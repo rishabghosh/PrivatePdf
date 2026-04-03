@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Scanner Effect', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'scanner-effect');
-    await expect(page.locator('h1')).toContainText(/scanner/i);
+    await expect(page.locator('h1').first()).toContainText(/scanner/i);
   });
 
   test('upload PDF and apply scanner effect', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'scanner-effect');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Pages to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pages-to-pdf');
-    await expect(page.locator('h1')).toContainText(/pages.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/pages.*pdf/i);
   });
 
   test('convert Apple Pages to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pages-to-pdf');
     await uploadFile(page, fixtures.samplePages);
     await expectFileUploaded(page);

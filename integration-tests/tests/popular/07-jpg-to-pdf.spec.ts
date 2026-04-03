@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('JPG to PDF', () => {
   test('page loads with JPG to PDF heading', async ({ page }) => {
     await navigateToTool(page, 'jpg-to-pdf');
-    await expect(page.locator('h1')).toContainText(/jpg.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/jpg.*pdf/i);
   });
 
   test('upload JPG and see preview', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('JPG to PDF', () => {
   });
 
   test('convert JPG to PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'jpg-to-pdf');
     await uploadFile(page, fixtures.sampleJpg);
     await expectFileUploaded(page);

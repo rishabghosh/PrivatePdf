@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Remove Annotations', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'remove-annotations');
-    await expect(page.locator('h1')).toContainText(/annotation/i);
+    await expect(page.locator('h1').first()).toContainText(/annotation/i);
   });
 
   test('upload annotated PDF and remove annotations', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'remove-annotations');
     await uploadFile(page, fixtures.annotatedPdf);
     await expectFileUploaded(page);

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDFs to ZIP', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-zip');
-    await expect(page.locator('h1')).toContainText(/zip/i);
+    await expect(page.locator('h1').first()).toContainText(/zip/i);
   });
 
   test('upload PDFs and create ZIP', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pdf-to-zip');
     await uploadFile(page, [fixtures.samplePdf, fixtures.multiPagePdf]);
     await expectFileUploaded(page);

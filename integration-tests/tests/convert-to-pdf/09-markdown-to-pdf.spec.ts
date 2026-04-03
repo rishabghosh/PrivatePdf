@@ -4,7 +4,7 @@ import { navigateToTool, clickProcessButton, waitForDownload, expectDownloadTrig
 test.describe('Markdown to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'markdown-to-pdf');
-    await expect(page.locator('h1')).toContainText(/markdown.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/markdown.*pdf/i);
   });
 
   test('upload markdown and see live preview', async ({ page }) => {

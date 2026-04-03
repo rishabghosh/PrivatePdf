@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Change Text Color', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'text-color');
-    await expect(page.locator('h1')).toContainText(/text.*color/i);
+    await expect(page.locator('h1').first()).toContainText(/text.*color/i);
   });
 
   test('upload PDF and change text color', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'text-color');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

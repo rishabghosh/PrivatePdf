@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDF to WebP', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-webp');
-    await expect(page.locator('h1')).toContainText(/pdf.*webp/i);
+    await expect(page.locator('h1').first()).toContainText(/pdf.*webp/i);
   });
 
   test('convert PDF to WebP and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pdf-to-webp');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

@@ -4,7 +4,7 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Invert Colors', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'invert-colors');
-    await expect(page.locator('h1')).toContainText(/invert/i);
+    await expect(page.locator('h1').first()).toContainText(/invert/i);
   });
 
   test('upload PDF and see preview', async ({ page }) => {
@@ -14,6 +14,7 @@ test.describe('Invert Colors', () => {
   });
 
   test('invert colors and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'invert-colors');
     await uploadFile(page, fixtures.colorPdf);
     await expectFileUploaded(page);

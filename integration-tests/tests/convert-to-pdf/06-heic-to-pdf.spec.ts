@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('HEIC to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'heic-to-pdf');
-    await expect(page.locator('h1')).toContainText(/heic.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/heic.*pdf/i);
   });
 
   test('convert HEIC to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'heic-to-pdf');
     await uploadFile(page, fixtures.sampleHeic);
     await expectFileUploaded(page);

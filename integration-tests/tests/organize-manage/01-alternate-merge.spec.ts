@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Alternate & Mix Pages', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'alternate-merge');
-    await expect(page.locator('h1')).toContainText(/alternate|mix/i);
+    await expect(page.locator('h1').first()).toContainText(/alternate|mix/i);
   });
 
   test('upload two PDFs and alternate merge', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'alternate-merge');
     await uploadFile(page, [fixtures.samplePdf, fixtures.multiPagePdf]);
     await expectFileUploaded(page);

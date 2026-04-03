@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('TIFF to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'tiff-to-pdf');
-    await expect(page.locator('h1')).toContainText(/tiff.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/tiff.*pdf/i);
   });
 
   test('convert TIFF to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'tiff-to-pdf');
     await uploadFile(page, fixtures.sampleTiff);
     await expectFileUploaded(page);

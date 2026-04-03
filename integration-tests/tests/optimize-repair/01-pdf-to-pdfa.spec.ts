@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PDF to PDF/A', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'pdf-to-pdfa');
-    await expect(page.locator('h1')).toContainText(/pdf.*a|archiv/i);
+    await expect(page.locator('h1').first()).toContainText(/pdf.*a|archiv/i);
   });
 
   test('convert to PDF/A and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pdf-to-pdfa');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

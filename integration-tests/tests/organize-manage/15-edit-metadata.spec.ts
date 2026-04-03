@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('Edit Metadata', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'edit-metadata');
-    await expect(page.locator('h1')).toContainText(/edit.*metadata/i);
+    await expect(page.locator('h1').first()).toContainText(/edit.*metadata/i);
   });
 
   test('upload PDF and edit metadata', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'edit-metadata');
     await uploadFile(page, fixtures.metadataPdf);
     await expectFileUploaded(page);

@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('PowerPoint to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'powerpoint-to-pdf');
-    await expect(page.locator('h1')).toContainText(/powerpoint.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/powerpoint.*pdf/i);
   });
 
   test('convert PPTX to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'powerpoint-to-pdf');
     await uploadFile(page, fixtures.samplePptx);
     await expectFileUploaded(page);

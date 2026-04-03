@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('XML to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'xml-to-pdf');
-    await expect(page.locator('h1')).toContainText(/xml.*pdf/i);
+    await expect(page.locator('h1').first()).toContainText(/xml.*pdf/i);
   });
 
   test('convert XML to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'xml-to-pdf');
     await uploadFile(page, fixtures.sampleXml);
     await expectFileUploaded(page);

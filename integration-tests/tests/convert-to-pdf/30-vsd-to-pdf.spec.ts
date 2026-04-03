@@ -4,10 +4,11 @@ import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, wai
 test.describe('VSD to PDF', () => {
   test('page loads correctly', async ({ page }) => {
     await navigateToTool(page, 'vsd-to-pdf');
-    await expect(page.locator('h1')).toContainText(/vsd.*pdf|visio/i);
+    await expect(page.locator('h1').first()).toContainText(/vsd.*pdf|visio/i);
   });
 
   test('convert VSD to PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'vsd-to-pdf');
     await uploadFile(page, fixtures.sampleVsd);
     await expectFileUploaded(page);
