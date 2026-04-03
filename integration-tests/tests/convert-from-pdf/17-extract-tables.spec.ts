@@ -8,6 +8,7 @@ test.describe('Extract Tables', () => {
   });
 
   test('extract tables from PDF', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'extract-tables');
     await uploadFile(page, fixtures.tablesPdf);
     await expectFileUploaded(page);

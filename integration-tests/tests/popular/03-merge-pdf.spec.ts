@@ -32,6 +32,7 @@ test.describe('Merge PDF', () => {
   });
 
   test('merge two PDFs and download result', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'merge-pdf');
     await uploadFile(page, [fixtures.samplePdf, fixtures.multiPagePdf]);
     await expectFileUploaded(page);

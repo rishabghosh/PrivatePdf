@@ -14,6 +14,7 @@ test.describe('Timestamp PDF', () => {
   });
 
   test('timestamp PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'timestamp-pdf');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

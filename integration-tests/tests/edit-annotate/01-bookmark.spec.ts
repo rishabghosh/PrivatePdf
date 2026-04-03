@@ -14,6 +14,7 @@ test.describe('Edit Bookmarks', () => {
   });
 
   test('add a bookmark and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'bookmark');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

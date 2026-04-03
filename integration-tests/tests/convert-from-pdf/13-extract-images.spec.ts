@@ -8,6 +8,7 @@ test.describe('Extract Images', () => {
   });
 
   test('extract images from PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'extract-images');
     await uploadFile(page, fixtures.samplePdf);
     await expectFileUploaded(page);

@@ -11,7 +11,7 @@ test.describe('PDF Editor', () => {
     await navigateToTool(page, 'edit-pdf');
     await uploadFile(page, fixtures.samplePdf);
     // Editor should show canvas/toolbar
-    await expect(page.locator('canvas, #editor-container, [class*="editor"]').first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('canvas, #editor-container, #embed-pdf-wrapper, [class*="editor"]').first()).toBeVisible({ timeout: 30_000 });
   });
 
   test('annotation toolbar is visible after loading PDF', async ({ page }) => {

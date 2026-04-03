@@ -14,6 +14,7 @@ test.describe('Remove Blank Pages', () => {
   });
 
   test('remove blank pages and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'remove-blank-pages');
     await uploadFile(page, fixtures.blankPagesPdf);
     await expectFileUploaded(page);

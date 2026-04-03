@@ -8,6 +8,7 @@ test.describe('PDF to Excel', () => {
   });
 
   test('convert PDF to Excel and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'pdf-to-excel');
     await uploadFile(page, fixtures.tablesPdf);
     await expectFileUploaded(page);

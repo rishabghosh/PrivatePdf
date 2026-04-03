@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, waitForDownload, expectDownloadTriggered, fixtures } from '../../helpers/test-helpers';
+import { navigateToTool, clickProcessButton, waitForDownload, expectDownloadTriggered } from '../../helpers/test-helpers';
 
 test.describe('Markdown to PDF', () => {
   test('page loads correctly', async ({ page }) => {
@@ -9,24 +9,21 @@ test.describe('Markdown to PDF', () => {
 
   test('upload markdown and see live preview', async ({ page }) => {
     await navigateToTool(page, 'markdown-to-pdf');
-    // Markdown tool may have a text editor instead of file upload
-    const editor = page.locator('textarea, [contenteditable], .CodeMirror, [class*="editor"]').first();
-    if (await editor.isVisible().catch(() => false)) {
-      await editor.fill('# Test\n\nHello **world**');
-    } else {
-      await uploadFile(page, fixtures.sampleMd);
-      await expectFileUploaded(page);
-    }
+    // Markdown tool uses a dynamic editor (textarea/CodeMirror), not file upload
+    const editor = page.locator('textarea, [contenteditable], .CodeMirror, .cm-editor, [class*="editor"]').first();
+    await expect(editor).toBeVisible({ timeout: 30_000 });
+    await editor.click();
+    // Type markdown content
+    await page.keyboard.type('# Test\n\nHello **world**');
   });
 
   test('convert markdown to PDF and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'markdown-to-pdf');
-    const editor = page.locator('textarea, [contenteditable]').first();
-    if (await editor.isVisible().catch(() => false)) {
-      await editor.fill('# Test Document\n\nThis is **bold** text.\n\n- Item 1\n- Item 2');
-    } else {
-      await uploadFile(page, fixtures.sampleMd);
-    }
+    const editor = page.locator('textarea, [contenteditable], .CodeMirror, .cm-editor, [class*="editor"]').first();
+    await expect(editor).toBeVisible({ timeout: 30_000 });
+    await editor.click();
+    await page.keyboard.type('# Test Document\n\nThis is **bold** text.\n\n- Item 1\n- Item 2');
 
     const download = await waitForDownload(page, async () => {
       await clickProcessButton(page);

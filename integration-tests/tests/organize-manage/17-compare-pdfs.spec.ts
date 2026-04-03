@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { navigateToTool, uploadFile, expectFileUploaded, fixtures } from '../../helpers/test-helpers';
+import { navigateToTool, uploadTwoFiles, expectFileUploaded, fixtures } from '../../helpers/test-helpers';
 
 test.describe('Compare PDFs', () => {
   test('page loads correctly', async ({ page }) => {
@@ -9,13 +9,13 @@ test.describe('Compare PDFs', () => {
 
   test('upload two PDFs for comparison', async ({ page }) => {
     await navigateToTool(page, 'compare-pdfs');
-    await uploadFile(page, [fixtures.samplePdf, fixtures.multiPagePdf]);
+    await uploadTwoFiles(page, fixtures.samplePdf, fixtures.multiPagePdf);
     await expectFileUploaded(page);
   });
 
   test('see visual comparison results', async ({ page }) => {
     await navigateToTool(page, 'compare-pdfs');
-    await uploadFile(page, [fixtures.samplePdf, fixtures.samplePdf]);
+    await uploadTwoFiles(page, fixtures.samplePdf, fixtures.samplePdf);
     await expectFileUploaded(page);
     // Should show side-by-side or diff view
     await page.waitForTimeout(5_000);

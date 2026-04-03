@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { navigateToTool, uploadFile, expectFileUploaded, clickProcessButton, waitForDownload, expectDownloadTriggered, fixtures } from '../../helpers/test-helpers';
+import { navigateToTool, uploadTwoFiles, expectFileUploaded, clickProcessButton, waitForDownload, expectDownloadTriggered, fixtures } from '../../helpers/test-helpers';
 
 test.describe('PDF Overlay', () => {
   test('page loads correctly', async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe('PDF Overlay', () => {
 
   test('upload PDFs and overlay', async ({ page }) => {
     await navigateToTool(page, 'overlay-pdf');
-    await uploadFile(page, fixtures.samplePdf);
+    await uploadTwoFiles(page, fixtures.samplePdf, fixtures.multiPagePdf);
     await expectFileUploaded(page);
 
     const download = await waitForDownload(page, async () => {

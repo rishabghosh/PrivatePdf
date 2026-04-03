@@ -16,10 +16,11 @@
     "test:optimize": "npx playwright test tests/optimize-repair/",
     "test:secure": "npx playwright test tests/secure/",
     "test:report": "npx playwright show-report",
-    "generate-fixtures": "node helpers/generate-fixtures.mjs"
+    "generate-fixtures": "node helpers/generate-all-fixtures.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.50.0",
+    "archiver": "^7.0.1",
     "pdf-lib": "^1.17.1"
   }
 }

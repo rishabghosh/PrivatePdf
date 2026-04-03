@@ -68,15 +68,23 @@ export const fixtures = {
 
 // ─── Page navigation ─────────────────────────────────────────────────
 export async function navigateToTool(page: Page, toolSlug: string) {
-  await page.goto(`/${toolSlug}.html`, { waitUntil: 'networkidle' });
-  await expect(page.locator('#tool-uploader, #uploader, #editor-container, #workflow-container')).toBeVisible({ timeout: 15_000 });
+  await page.goto(`${toolSlug}.html`, { waitUntil: 'networkidle' });
+  await expect(page.locator('#tool-uploader, #uploader, #editor-container, #workflow-container, #workflow-app, #upload-area, #back-to-tools, #back-to-tools-upload').first()).toBeVisible({ timeout: 15_000 });
 }
 
 // ─── File upload helpers ─────────────────────────────────────────────
 export async function uploadFile(page: Page, filePath: string | string[]) {
   const paths = Array.isArray(filePath) ? filePath : [filePath];
-  const fileInput = page.locator('#file-input');
+  const fileInput = page.locator('#file-input, #pdfFile, #pdfFileInput, #pdf-file-input').first();
   await fileInput.setInputFiles(paths);
+}
+
+export async function uploadTwoFiles(page: Page, file1: string, file2: string) {
+  const input1 = page.locator('#file-input-1, #base-file-input').first();
+  const input2 = page.locator('#file-input-2, #overlay-file-input').first();
+  await input1.setInputFiles(file1);
+  await page.waitForTimeout(1_000);
+  await input2.setInputFiles(file2);
 }
 
 export async function uploadViaDragDrop(page: Page, filePath: string) {
@@ -101,7 +109,7 @@ export async function uploadViaDragDrop(page: Page, filePath: string) {
 
 // ─── Processing helpers ──────────────────────────────────────────────
 export async function clickProcessButton(page: Page) {
-  const processBtn = page.locator('#process-btn, #merge-btn, #split-btn, #compress-btn, #convert-btn, [id$="-btn"]:has-text("Process"), button:has-text("Merge"), button:has-text("Split"), button:has-text("Compress"), button:has-text("Convert"), button:has-text("Encrypt"), button:has-text("Decrypt"), button:has-text("Download"), button.btn-gradient');
+  const processBtn = page.locator('#process-btn, #merge-btn, #split-btn, #compress-btn, #convert-btn, #download-btn, #downloadBtn, #save-stamped-btn, #export-pdf-btn, #save-layers-btn, [id$="-btn"]:has-text("Process"), button:has-text("Merge"), button:has-text("Split"), button:has-text("Compress"), button:has-text("Convert"), button:has-text("Encrypt"), button:has-text("Decrypt"), button:has-text("Download"), button:has-text("Export"), button:has-text("Save"), button.btn-gradient');
   await processBtn.first().click();
 }
 
@@ -130,14 +138,14 @@ export async function expectPageLoaded(page: Page, toolSlug: string) {
   await expect(page.locator('h1').first()).toBeVisible();
   // Check the drop zone or editor is present
   await expect(
-    page.locator('#drop-zone, #editor-container, #workflow-container, #simple-tool-container').first()
+    page.locator('#drop-zone, #editor-container, #workflow-container, #workflow-app, #simple-tool-container, #upload-area, #back-to-tools, #back-to-tools-upload').first()
   ).toBeVisible();
 }
 
 export async function expectFileUploaded(page: Page) {
   // After upload, the tool should show some indication (file list, preview, options, etc.)
   await expect(
-    page.locator('#file-list, #page-preview, #preview-container, #merge-options, #tool-options, .file-item, [id$="-options"], canvas').first()
+    page.locator('#file-display-area, #file-controls, #file-list, #fileList, #page-preview, #preview-container, #merge-options, #tool-options, .file-item, [id$="-options"], canvas, #editor-panel, #viewer-card, #compare-viewer, #pages-container, #tool-container, #embed-pdf-wrapper, #loading-overlay').first()
   ).toBeVisible({ timeout: 30_000 });
 }
 

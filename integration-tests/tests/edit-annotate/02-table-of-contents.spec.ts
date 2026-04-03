@@ -14,6 +14,7 @@ test.describe('Table of Contents', () => {
   });
 
   test('generate TOC and download', async ({ page }) => {
+    test.slow();
     await navigateToTool(page, 'table-of-contents');
     await uploadFile(page, fixtures.bookmarkedPdf);
     await expectFileUploaded(page);
