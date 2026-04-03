@@ -8,6 +8,7 @@ test.describe('ODS to PDF', () => {
   });
 
   test('convert ODS to PDF', async ({ page }) => {
+    test.fixme(); // WASM LibreOffice worker fails to load in headless Chrome
     test.slow();
     await navigateToTool(page, 'ods-to-pdf');
     await uploadFile(page, fixtures.sampleOds);

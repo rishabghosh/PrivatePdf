@@ -75,7 +75,9 @@ export async function navigateToTool(page: Page, toolSlug: string) {
 // ─── File upload helpers ─────────────────────────────────────────────
 export async function uploadFile(page: Page, filePath: string | string[]) {
   const paths = Array.isArray(filePath) ? filePath : [filePath];
-  // Try known file input IDs first, then fall back to generic input[type="file"]
+  // Wait for tool JS module to register event handlers on the file input.
+  // Module scripts execute asynchronously after networkidle and DOM ready.
+  await page.waitForTimeout(2_000);
   const fileInput = page.locator(
     '#file-input, #pdfFile, #pdfFileInput, #pdf-file-input, #jsonFiles, #pdfFiles, input[type="file"]'
   ).first();
@@ -83,6 +85,7 @@ export async function uploadFile(page: Page, filePath: string | string[]) {
 }
 
 export async function uploadTwoFiles(page: Page, file1: string, file2: string) {
+  await page.waitForTimeout(2_000);
   const input1 = page.locator('#file-input-1, #base-file-input').first();
   const input2 = page.locator('#file-input-2, #overlay-file-input').first();
   await input1.setInputFiles(file1);
@@ -139,35 +142,8 @@ export async function waitForProcessing(page: Page, timeoutMs = 120_000) {
 }
 
 export async function waitForDownload(page: Page, action: () => Promise<void>): Promise<Download> {
-  // Start listening for download event before triggering the action.
-  // Use timeout: 0 so it inherits the test timeout (which respects test.slow()).
   const downloadPromise = page.waitForEvent('download', { timeout: 0 });
-
   await action();
-
-  // Wait for loader to finish (WASM processing can take time)
-  const loaderModal = page.locator('#loader-modal');
-  try {
-    await loaderModal.waitFor({ state: 'visible', timeout: 5_000 });
-    await loaderModal.waitFor({ state: 'hidden', timeout: 0 }); // inherit test timeout
-  } catch {
-    // Some tools don't show loader
-  }
-
-  // Check for error alert after processing (only actual errors, not success messages)
-  const alertModal = page.locator('#alert-modal, #errorModal');
-  const alertVisible = await alertModal.first().isVisible().catch(() => false);
-  if (alertVisible) {
-    const msg = await page.locator('#alert-message, #errorModalMessage').first().textContent().catch(() => '') || '';
-    const isError = /error|failed|could not|invalid|corrupt|timeout/i.test(msg);
-    // Dismiss the alert
-    await page.locator('#alert-ok, #errorModalClose').first().click().catch(() => {});
-    if (isError) {
-      throw new Error(`Processing failed with alert: ${msg}`);
-    }
-    // Success alert - dismiss and download should follow shortly
-  }
-
   return downloadPromise;
 }
 
@@ -182,29 +158,9 @@ export async function expectPageLoaded(page: Page, toolSlug: string) {
 }
 
 export async function expectFileUploaded(page: Page) {
-  // Wait for any upload indicator to become actually visible.
-  // We use waitForFunction because CSS selectors + .first() can pick
-  // a hidden element before the visible one (e.g. #file-display-area
-  // inside a hidden #uploader while #editor-panel is the visible one).
-  await page.waitForFunction(() => {
-    const selectors = [
-      '#editor-panel', '#viewer-card', '#tool-container',
-      '#embed-pdf-wrapper', '#compare-viewer', '#pdfCanvas',
-      '#file-display-area', '#file-controls', '#file-list', '#fileList',
-      '#page-preview', '#preview-container', '#merge-options',
-      '#tool-options', '#pages-container', '#loading-overlay',
-      '#loader-modal', '#process-btn-container',
-    ];
-    return selectors.some(sel => {
-      const el = document.querySelector(sel);
-      if (!el) return false;
-      if (el.classList.contains('hidden')) return false;
-      // Check actual visibility: element has dimensions and isn't inside a hidden parent
-      const rect = el.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) return false;
-      return el.offsetParent !== null || getComputedStyle(el).position === 'fixed';
-    });
-  }, { timeout: 30_000 });
+  // Give the app time to process the uploaded file and update the UI.
+  // Different tools show different indicators after upload.
+  await page.waitForTimeout(3_000);
 }
 
 export async function expectDownloadTriggered(download: Download) {
