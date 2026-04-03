@@ -3,15 +3,25 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * PrivatePDF Integration Test Configuration
  *
- * Configure the target deployment via environment variables:
- *   BASE_URL  - The deployed app URL (default: GitHub Pages)
- *   CI        - Set to "true" in CI environments
+ * Run modes:
  *
- * Examples:
- *   BASE_URL=https://alam00000.github.io/bentopdf npx playwright test
- *   BASE_URL=http://localhost:3000 npx playwright test
- *   BASE_URL=https://privatepdf.com npx playwright test
+ *   Local (starts Vite dev server automatically):
+ *     npm run test:local
+ *     npm run test:local:headed
+ *
+ *   Remote (against GitHub Pages or any deployed URL):
+ *     npm test                          # defaults to GitHub Pages
+ *     BASE_URL=https://example.com npm test
+ *
+ *   Environment variables:
+ *     TEST_ENV   - "local" to auto-start the dev server (default: "remote")
+ *     BASE_URL   - Override the target URL (ignored when TEST_ENV=local)
+ *     CI         - Set to "true" in CI environments
  */
+
+const isLocal = process.env.TEST_ENV === 'local';
+const defaultRemoteURL = 'https://alam00000.github.io/bentopdf/';
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -29,12 +39,27 @@ export default defineConfig({
   },
 
   use: {
-    baseURL: process.env.BASE_URL || 'https://alam00000.github.io/bentopdf',
+    baseURL: isLocal
+      ? 'http://localhost:5173/'
+      : (process.env.BASE_URL || defaultRemoteURL),
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 30_000,
   },
+
+  /* Start a local Vite dev server when TEST_ENV=local */
+  ...(isLocal
+    ? {
+        webServer: {
+          command: 'npm run dev',
+          cwd: '..',
+          url: 'http://localhost:5173',
+          reuseExistingServer: !process.env.CI,
+          timeout: 30_000,
+        },
+      }
+    : {}),
 
   projects: [
     {

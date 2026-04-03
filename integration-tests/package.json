@@ -5,6 +5,10 @@
   "description": "Playwright integration tests for PrivatePDF (BentoPDF)",
   "scripts": {
     "test": "npx playwright test",
+    "test:local": "TEST_ENV=local npx playwright test",
+    "test:local:headed": "TEST_ENV=local npx playwright test --headed",
+    "test:local:chromium": "TEST_ENV=local npx playwright test --project=chromium",
+    "test:local:ui": "TEST_ENV=local npx playwright test --ui",
     "test:headed": "npx playwright test --headed",
     "test:debug": "npx playwright test --debug",
     "test:ui": "npx playwright test --ui",
