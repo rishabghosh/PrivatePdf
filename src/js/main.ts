@@ -1,9 +1,5 @@
-import { categories } from './config/tools.js';
 import { dom, switchView, hideAlert } from './ui.js';
 import { ShortcutsManager } from './logic/shortcuts.js';
-import { createIcons, icons } from 'lucide';
-import '@phosphor-icons/web/regular';
-import * as pdfjsLib from 'pdfjs-dist';
 import '../css/styles.css';
 import { formatShortcutDisplay, formatStars } from './utils/helpers.js';
 import {
@@ -18,13 +14,26 @@ import {
   isToolDisabled,
   isCurrentPageDisabled,
 } from './utils/disabled-tools.js';
+import { isLowTier } from './utils/device-capability.js';
 declare const __BRAND_NAME__: string;
+
+// Load Phosphor icons asynchronously — not needed for initial render
+// @ts-expect-error -- no type declarations for this side-effect import
+import('@phosphor-icons/web/regular');
+
+// Module-level reference for categories, loaded dynamically when needed
+let _categories: Awaited<typeof import('./config/tools.js')>['categories'] | null = null;
 
 const init = async () => {
   await initI18n();
   await loadRuntimeConfig();
   injectLanguageSwitcher();
   applyTranslations();
+
+  // Disable smooth scrolling on low-tier devices to reduce jank
+  if (isLowTier()) {
+    document.documentElement.style.scrollBehavior = 'auto';
+  }
 
   if (isCurrentPageDisabled()) {
     document.title = t('disabledTool.title') || 'Tool Unavailable';
@@ -45,10 +54,9 @@ const init = async () => {
     return;
   }
 
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    'pdfjs-dist/build/pdf.worker.min.mjs',
-    import.meta.url
-  ).toString();
+  // pdfjs-dist worker is initialized by ui.ts and individual tool logic files
+  // — no need to set it up here in main.ts
+
   if (__SIMPLE_MODE__) {
     const hideBrandingSections = () => {
       const heroSection = document.getElementById('hero-section');
@@ -282,6 +290,8 @@ const init = async () => {
 
   // Homepage-only tool grid rendering (not used on individual tool pages)
   if (dom.toolGrid) {
+    const toolsModule = await import('./config/tools.js');
+    _categories = toolsModule.categories;
     dom.toolGrid.textContent = '';
 
     let collapsedCategories: string[] = [];
@@ -299,7 +309,7 @@ const init = async () => {
       );
     }
 
-    const filteredCategories = categories
+    const filteredCategories = _categories!
       .map((category) => ({
         ...category,
         tools: category.tools.filter((tool) => !isToolDisabled(tool.id)),
@@ -485,7 +495,9 @@ const init = async () => {
         searchResultsContainer.appendChild(tool);
       });
 
-      createIcons({ icons });
+      import('lucide').then(({ createIcons, icons }) =>
+        createIcons({ icons })
+      );
     });
 
     window.addEventListener('keydown', function (e) {
@@ -533,7 +545,7 @@ const init = async () => {
     });
   }
 
-  createIcons({ icons });
+  import('lucide').then(({ createIcons, icons }) => createIcons({ icons }));
   console.log('Please share our tool and share the love!');
 
   const githubStarsElements = [
@@ -541,10 +553,16 @@ const init = async () => {
     document.getElementById('github-stars-mobile'),
   ];
 
-  if (githubStarsElements.some((el) => el) && !__SIMPLE_MODE__) {
-    fetch('https://api.github.com/repos/alam00000/bentopdf')
+  if (githubStarsElements.some((el) => el) && !__SIMPLE_MODE__ && !isLowTier()) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    fetch('https://api.github.com/repos/alam00000/bentopdf', {
+      signal: controller.signal,
+    })
       .then((response) => response.json())
       .then((data) => {
+        clearTimeout(timeoutId);
         if (data.stargazers_count !== undefined) {
           const formattedStars = formatStars(data.stargazers_count);
           githubStarsElements.forEach((el) => {
@@ -553,14 +571,23 @@ const init = async () => {
         }
       })
       .catch(() => {
+        clearTimeout(timeoutId);
         githubStarsElements.forEach((el) => {
           if (el) el.textContent = '-';
         });
       });
   }
 
-  // Initialize Shortcuts System
-  ShortcutsManager.init();
+  // Initialize Shortcuts System — defer on low-tier devices
+  if (isLowTier()) {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => ShortcutsManager.init());
+    } else {
+      setTimeout(() => ShortcutsManager.init(), 200);
+    }
+  } else {
+    ShortcutsManager.init();
+  }
 
   // Tab switching for settings modal
   const shortcutsTabBtn = document.getElementById('shortcuts-tab-btn');
@@ -897,13 +924,17 @@ const init = async () => {
     return 'unknown';
   }
 
-  function renderShortcutsList() {
+  async function renderShortcutsList() {
     if (!dom.shortcutsList) return;
     dom.shortcutsList.innerHTML = '';
 
     const allShortcuts = ShortcutsManager.getAllShortcuts();
     const isMac = navigator.userAgent.toUpperCase().includes('MAC');
-    const shortcutCategories = categories
+    if (!_categories) {
+      const toolsModule = await import('./config/tools.js');
+      _categories = toolsModule.categories;
+    }
+    const shortcutCategories = _categories
       .map((category) => ({
         ...category,
         tools: category.tools.filter((tool) => !isToolDisabled(tool.id)),
@@ -1128,7 +1159,7 @@ const init = async () => {
       }
     });
 
-    createIcons({ icons });
+    import('lucide').then(({ createIcons, icons }) => createIcons({ icons }));
   }
 
   const scrollToTopBtn = document.getElementById('scroll-to-top-btn');

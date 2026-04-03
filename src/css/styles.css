@@ -2,19 +2,6 @@
 @import '@fontsource/dm-sans/500.css';
 @import '@fontsource/dm-sans/600.css';
 @import '@fontsource/dm-sans/700.css';
-@import '@fontsource/dancing-script/400.css';
-@import '@fontsource/great-vibes/400.css';
-@import '@fontsource/kalam/300.css';
-@import '@fontsource/kalam/400.css';
-@import '@fontsource/kalam/700.css';
-@import '@fontsource/lato/400.css';
-@import '@fontsource/lato/700.css';
-@import '@fontsource/lato/400-italic.css';
-@import '@fontsource/merriweather/400.css';
-@import '@fontsource/merriweather/700.css';
-@import '@fontsource/merriweather/400-italic.css';
-@import '@fontsource/cedarville-cursive/400.css';
-@import 'cropperjs/dist/cropper.css';
 @import 'tailwindcss';
 
 @theme {
@@ -725,4 +712,27 @@ input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none; /* Chrome, Safari, Edge */
   margin: 0;
+}
+
+/* Reduce motion for users who prefer it and low-tier devices */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .tool-card {
+    transition: none !important;
+  }
+
+  .tool-card:hover {
+    transform: none !important;
+  }
+
+  .solid-spinner {
+    animation-duration: 2s;
+  }
+
+  .category-tools {
+    transition: none;
+  }
 }

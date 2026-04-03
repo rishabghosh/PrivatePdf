@@ -49,10 +49,12 @@
         content: ''; width: 6px; height: 6px;
         background: #34d399; border-radius: 50%;
         display: inline-block; margin-right: 8px;
-        animation: pulse-dot 2s infinite;
       }
-      @keyframes pulse-dot {
-        0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+      @media (prefers-reduced-motion: no-preference) {
+        .privacy-pulse::before { animation: pulse-dot 2s infinite; }
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+        }
       }
       .tool-card-custom:hover {
         border-color: #818cf8 !important;
