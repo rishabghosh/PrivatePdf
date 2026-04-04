@@ -14,6 +14,8 @@ import fs from 'fs';
 import { constants as zlibConstants } from 'zlib';
 import type { OutputBundle } from 'rollup';
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 const SUPPORTED_LANGUAGES = [
   'en',
   'ar',
@@ -369,55 +371,45 @@ export default defineConfig(() => {
 
   return {
     base: (process.env.BASE_URL || '/').replace(/\/?$/, '/'),
-    plugins: [
-      // basicSsl(),
-      handlebars({
-        partialDirectory: resolve(__dirname, 'src/partials'),
-        context: {
-          baseUrl: (process.env.BASE_URL || '/').replace(/\/?$/, '/'),
-          simpleMode: process.env.SIMPLE_MODE === 'true',
-          brandName: process.env.VITE_BRAND_NAME || '',
-          brandLogo: process.env.VITE_BRAND_LOGO || '',
-          footerText: process.env.VITE_FOOTER_TEXT || '',
+    plugins: [// basicSsl(),
+    handlebars({
+      partialDirectory: resolve(__dirname, 'src/partials'),
+      context: {
+        baseUrl: (process.env.BASE_URL || '/').replace(/\/?$/, '/'),
+        simpleMode: process.env.SIMPLE_MODE === 'true',
+        brandName: process.env.VITE_BRAND_NAME || '',
+        brandLogo: process.env.VITE_BRAND_LOGO || '',
+        footerText: process.env.VITE_FOOTER_TEXT || '',
+      },
+    }), languageRouterPlugin(), flattenPagesPlugin(), rewriteHtmlPathsPlugin(), tailwindcss(), nodePolyfills({
+      include: ['buffer', 'stream', 'util', 'zlib', 'process'],
+      globals: {
+        Buffer: true,
+        global: false,
+        process: true,
+      },
+    }), viteStaticCopy({
+      targets: staticCopyTargets,
+    }), viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024,
+      compressionOptions: {
+        params: {
+          [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+          [zlibConstants.BROTLI_PARAM_MODE]: zlibConstants.BROTLI_MODE_TEXT,
         },
-      }),
-      languageRouterPlugin(),
-      flattenPagesPlugin(),
-      rewriteHtmlPathsPlugin(),
-      tailwindcss(),
-      nodePolyfills({
-        include: ['buffer', 'stream', 'util', 'zlib', 'process'],
-        globals: {
-          Buffer: true,
-          global: false,
-          process: true,
-        },
-      }),
-      viteStaticCopy({
-        targets: staticCopyTargets,
-      }),
-      viteCompression({
-        algorithm: 'brotliCompress',
-        ext: '.br',
-        threshold: 1024,
-        compressionOptions: {
-          params: {
-            [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
-            [zlibConstants.BROTLI_PARAM_MODE]: zlibConstants.BROTLI_MODE_TEXT,
-          },
-        },
-        deleteOriginFile: false,
-      }),
-      viteCompression({
-        algorithm: 'gzip',
-        ext: '.gz',
-        threshold: 1024,
-        compressionOptions: {
-          level: 9,
-        },
-        deleteOriginFile: false,
-      }),
-    ],
+      },
+      deleteOriginFile: false,
+    }), viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 1024,
+      compressionOptions: {
+        level: 9,
+      },
+      deleteOriginFile: false,
+    }), cloudflare()],
     define: {
       __SIMPLE_MODE__: JSON.stringify(process.env.SIMPLE_MODE === 'true'),
       __BRAND_NAME__: JSON.stringify(process.env.VITE_BRAND_NAME || ''),
