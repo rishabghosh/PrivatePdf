@@ -1,16 +1,30 @@
-import { showLoader, hideLoader, showAlert } from '../ui.js';
+import { showLoader, hideLoader, showAlert, showWarning } from '../ui.js';
 import { t } from '../i18n/i18n';
 import {
   downloadFile,
-  readFileAsArrayBuffer,
   formatBytes,
-  getPDFDocument,
 } from '../utils/helpers.js';
 import { state } from '../state.js';
 import { createIcons, icons } from 'lucide';
 import { loadPyMuPDF } from '../utils/pymupdf-loader.js';
 import { batchDecryptIfNeeded } from '../utils/password-prompt.js';
 import { deduplicateFileName } from '../utils/deduplicate-filename.js';
+import { checkMemoryBudget, isLowTier } from '../utils/device-capability.js';
+
+/**
+ * Read the last 2KB of a PDF to extract page count from the trailer,
+ * avoiding a full file parse that wastes memory on low-tier devices.
+ */
+async function quickPageCount(file: File): Promise<number | null> {
+  try {
+    const tail = await file.slice(Math.max(0, file.size - 2048)).arrayBuffer();
+    const text = new TextDecoder('latin1').decode(tail);
+    const match = text.match(/\/Count\s+(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  } catch {
+    return null;
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
@@ -67,12 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         fileDiv.append(infoContainer, removeBtn);
         fileDisplayArea.appendChild(fileDiv);
 
-        try {
-          const arrayBuffer = await readFileAsArrayBuffer(file);
-          const pdfDoc = await getPDFDocument({ data: arrayBuffer }).promise;
-          metaSpan.textContent = `${formatBytes(file.size)} • ${pdfDoc.numPages} pages`;
-        } catch {
-          metaSpan.textContent = `${formatBytes(file.size)} • Could not load page count`;
+        const pageCount = await quickPageCount(file);
+        if (pageCount !== null) {
+          metaSpan.textContent = `${formatBytes(file.size)} • ${pageCount} pages`;
+        } else {
+          metaSpan.textContent = formatBytes(file.size);
         }
       }
 
@@ -101,6 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      const budget = checkMemoryBudget(state.files);
+      if (budget.warning) {
+        const proceed = await showWarning('Warning', budget.warning);
+        if (!proceed) return;
+      }
+
       showLoader('Loading PDF converter...');
       const pymupdf = await loadPyMuPDF();
 
@@ -117,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         downloadFile(docxBlob, outName);
         hideLoader();
+
+        // Release file data immediately — don't wait for alert dismissal
+        state.files = [];
 
         showAlert(
           'Conversion Complete',
@@ -135,14 +157,20 @@ document.addEventListener('DOMContentLoaded', () => {
             `Converting ${i + 1}/${state.files.length}: ${file.name}...`
           );
 
-          const docxBlob = await pymupdf.pdfToDocx(file);
+          let docxBlob: Blob | null = await pymupdf.pdfToDocx(file);
           const baseName = file.name.replace(/\.pdf$/i, '');
           const arrayBuffer = await docxBlob.arrayBuffer();
+          docxBlob = null; // Release blob — we have the arrayBuffer
           const zipEntryName = deduplicateFileName(
             `${baseName}.docx`,
             usedNames
           );
           zip.file(zipEntryName, arrayBuffer);
+
+          // Yield to event loop on low-tier devices so browser can GC
+          if (isLowTier() && i < state.files.length - 1) {
+            await new Promise((r) => setTimeout(r, 0));
+          }
         }
 
         showLoader('Creating ZIP archive...');
@@ -151,9 +179,13 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadFile(zipBlob, 'converted-documents.zip');
         hideLoader();
 
+        // Release file data immediately — don't wait for alert dismissal
+        const convertedCount = state.files.length;
+        state.files = [];
+
         showAlert(
           'Conversion Complete',
-          `Successfully converted ${state.files.length} PDF(s) to DOCX.`,
+          `Successfully converted ${convertedCount} PDF(s) to DOCX.`,
           'success',
           () => resetState()
         );

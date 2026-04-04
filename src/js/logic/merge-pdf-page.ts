@@ -1,7 +1,7 @@
-import { showLoader, hideLoader, showAlert } from '../ui.js';
+import { showLoader, hideLoader, showAlert, showWarning } from '../ui.js';
 import { downloadFile } from '../utils/helpers.js';
 import { state } from '../state.js';
-import { getDeviceCapabilities } from '../utils/device-capability.js';
+import { getDeviceCapabilities, isLowTier, checkMemoryBudget } from '../utils/device-capability.js';
 
 import { createIcons, icons } from 'lucide';
 import type { MergeJob, MergeFile, MergeMessage, MergeResponse } from '@/types';
@@ -24,6 +24,7 @@ async function getPdfjs() {
 interface MergeState {
   pdfDocs: Record<string, PdfjsLib.PDFDocumentProxy>;
   pdfBytes: Record<string, ArrayBuffer>;
+  pageCounts: Record<string, number>;
   activeMode: 'file' | 'page';
   sortableInstances: {
     fileList?: Sortable;
@@ -38,6 +39,7 @@ interface MergeState {
 const mergeState: MergeState = {
   pdfDocs: {},
   pdfBytes: {},
+  pageCounts: {},
   activeMode: 'file',
   sortableInstances: {},
   isRendering: false,
@@ -142,8 +144,17 @@ async function renderPageMergeThumbnails() {
   let totalPages = 0;
   for (let i = 0; i < state.files.length; i++) {
     const fileKey = `${i}_${state.files[i].name}`;
-    const doc = mergeState.pdfDocs[fileKey];
-    if (doc) totalPages += doc.numPages;
+    totalPages += mergeState.pageCounts[fileKey] ?? 0;
+  }
+
+  // Lazy-load PDFDocumentProxy objects needed for thumbnail rendering
+  const pdfjsLib = await getPdfjs();
+  for (let i = 0; i < state.files.length; i++) {
+    const fileKey = `${i}_${state.files[i].name}`;
+    if (!mergeState.pdfDocs[fileKey] && mergeState.pdfBytes[fileKey]) {
+      const pdf = await pdfjsLib.getDocument({ data: mergeState.pdfBytes[fileKey] }).promise;
+      mergeState.pdfDocs[fileKey] = pdf;
+    }
   }
 
   try {
@@ -166,7 +177,11 @@ async function renderPageMergeThumbnails() {
       imgContainer.className = 'relative';
 
       const img = document.createElement('img');
-      img.src = canvas.toDataURL();
+      img.src = isLowTier()
+        ? canvas.toDataURL('image/jpeg', 0.6)
+        : canvas.toDataURL();
+      canvas.width = 0;
+      canvas.height = 0;
       img.className = 'rounded-md shadow-md max-w-full h-auto';
 
       const pageNumDiv = document.createElement('div');
@@ -263,6 +278,7 @@ const resetState = async () => {
 
   mergeState.pdfDocs = {};
   mergeState.pdfBytes = {};
+  mergeState.pageCounts = {};
   mergeState.activeMode = 'file';
   mergeState.cachedThumbnails = null;
   mergeState.lastFileHash = null;
@@ -300,6 +316,12 @@ export async function merge() {
   if (!isCpdfAvailable()) {
     showWasmRequiredDialog('cpdf');
     return;
+  }
+
+  const budget = checkMemoryBudget(state.files);
+  if (budget.warning) {
+    const proceed = await showWarning('Warning', budget.warning);
+    if (!proceed) return;
   }
 
   showLoader('Merging PDFs...');
@@ -420,6 +442,14 @@ export async function merge() {
         const blob = new Blob([e.data.pdfBytes], { type: 'application/pdf' });
         downloadFile(blob, 'merged.pdf');
         mergeState.mergeSuccess = true;
+
+        // Release heavy data immediately — don't wait for alert dismissal
+        mergeState.pdfBytes = {};
+        for (const key of Object.keys(mergeState.pdfDocs)) {
+          mergeState.pdfDocs[key].destroy();
+        }
+        mergeState.pdfDocs = {};
+
         showAlert(
           'Success',
           'PDFs merged successfully!',
@@ -462,6 +492,7 @@ export async function refreshMergeUI() {
   try {
     mergeState.pdfDocs = {};
     mergeState.pdfBytes = {};
+    mergeState.pageCounts = {};
 
     hideLoader();
     const { batchDecryptIfNeeded } = await import('../utils/password-prompt.js');
@@ -474,9 +505,17 @@ export async function refreshMergeUI() {
       const fileKey = `${i}_${file.name}`;
 
       const bytes = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
       mergeState.pdfBytes[fileKey] = bytes;
-      mergeState.pdfDocs[fileKey] = pdf;
+      mergeState.pageCounts[fileKey] = pdf.numPages;
+
+      if (wasInPageMode) {
+        // Page-mode needs the proxy for thumbnail rendering
+        mergeState.pdfDocs[fileKey] = pdf;
+      } else {
+        // File-mode only needs page count — destroy proxy to free memory
+        pdf.destroy();
+      }
     }
 
     if (state.files.length === 0) {
@@ -503,8 +542,7 @@ export async function refreshMergeUI() {
   fileList.textContent = ''; // Clear list safely
   (state.files as File[]).forEach((f, index) => {
     const fileKey = `${index}_${f.name}`;
-    const doc = mergeState.pdfDocs[fileKey];
-    const pageCount = doc ? doc.numPages : 'N/A';
+    const pageCount = mergeState.pageCounts[fileKey] ?? 'N/A';
     const safeFileName = fileKey.replace(/[^a-zA-Z0-9]/g, '_');
 
     const li = document.createElement('li');

@@ -220,6 +220,26 @@ export function getDeviceCapabilities(): DeviceCapabilities {
   return cachedCapabilities;
 }
 
+export function checkMemoryBudget(files: File[]): {
+  allowed: boolean;
+  warning: string | null;
+} {
+  const caps = getDeviceCapabilities();
+  const totalMB = files.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024);
+  const maxSingleMB = Math.max(...files.map((f) => f.size)) / (1024 * 1024);
+
+  if (
+    totalMB > caps.upload.warnTotalSizeMB ||
+    maxSingleMB > caps.upload.warnFileSizeMB
+  ) {
+    return {
+      allowed: true,
+      warning: `Large file(s) detected (${totalMB.toFixed(1)} MB total). Processing may be slow or unstable on this device. Consider using fewer or smaller files.`,
+    };
+  }
+  return { allowed: true, warning: null };
+}
+
 export function isMobileDevice(): boolean {
   return (
     (navigator.maxTouchPoints > 0 && window.innerWidth < 768) ||
