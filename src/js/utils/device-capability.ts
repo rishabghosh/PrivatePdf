@@ -35,6 +35,12 @@ export interface ImageCapabilities {
   pdfToImageScale: number;
 }
 
+export interface UploadLimits {
+  warnFileSizeMB: number;
+  warnTotalSizeMB: number;
+  warnPageCount: number;
+}
+
 export interface DeviceCapabilities {
   tier: DeviceTier;
   render: RenderCapabilities;
@@ -42,6 +48,7 @@ export interface DeviceCapabilities {
   wasm: WasmCapabilities;
   ocr: OcrCapabilities;
   image: ImageCapabilities;
+  upload: UploadLimits;
 }
 
 let cached: DeviceTier | null = null;
@@ -107,6 +114,11 @@ const LOW_CAPABILITIES: DeviceCapabilities = {
     jpegQuality: 0.5,
     pdfToImageScale: 1.0,
   },
+  upload: {
+    warnFileSizeMB: 10,
+    warnTotalSizeMB: 20,
+    warnPageCount: 30,
+  },
 };
 
 const MEDIUM_CAPABILITIES: DeviceCapabilities = {
@@ -141,6 +153,11 @@ const MEDIUM_CAPABILITIES: DeviceCapabilities = {
     jpegQuality: 0.75,
     pdfToImageScale: 1.5,
   },
+  upload: {
+    warnFileSizeMB: 20,
+    warnTotalSizeMB: 40,
+    warnPageCount: 60,
+  },
 };
 
 const HIGH_CAPABILITIES: DeviceCapabilities = {
@@ -174,6 +191,11 @@ const HIGH_CAPABILITIES: DeviceCapabilities = {
     maxDimension: 0, // unlimited
     jpegQuality: 0.92,
     pdfToImageScale: 2.0,
+  },
+  upload: {
+    warnFileSizeMB: Infinity,
+    warnTotalSizeMB: Infinity,
+    warnPageCount: Infinity,
   },
 };
 

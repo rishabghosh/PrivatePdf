@@ -133,6 +133,30 @@ export const hideAlert = () => {
   if (dom.alertModal) dom.alertModal.classList.add('hidden');
 };
 
+export function showWarning(title: string, message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!dom.warningModal || !dom.warningConfirmBtn || !dom.warningCancelBtn) {
+      resolve(true);
+      return;
+    }
+
+    if (dom.warningTitle) dom.warningTitle.textContent = title;
+    if (dom.warningMessage) dom.warningMessage.textContent = message;
+    dom.warningModal.classList.remove('hidden');
+
+    const cleanup = () => {
+      dom.warningModal!.classList.add('hidden');
+      dom.warningConfirmBtn!.removeEventListener('click', onConfirm);
+      dom.warningCancelBtn!.removeEventListener('click', onCancel);
+    };
+    const onConfirm = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+
+    dom.warningConfirmBtn.addEventListener('click', onConfirm);
+    dom.warningCancelBtn.addEventListener('click', onCancel);
+  });
+}
+
 export const switchView = (view: string) => {
   if (view === 'grid') {
     dom.gridView.classList.remove('hidden');

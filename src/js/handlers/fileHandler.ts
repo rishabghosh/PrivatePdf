@@ -3,6 +3,7 @@ import {
   showLoader,
   hideLoader,
   showAlert,
+  showWarning,
   renderPageThumbnails,
   renderFileDisplay,
   switchView,
@@ -29,6 +30,7 @@ import {
 } from '../config/pdf-tools.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import { loadPdfDocument } from '../utils/load-pdf-document.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -73,6 +75,20 @@ async function handleSinglePdfUpload(toolId: string, file: File) {
     const pdfBytes = await readFileAsArrayBuffer(file);
     state.pdfDoc = await loadPdfDocument(pdfBytes as ArrayBuffer);
     hideLoader();
+
+    // Page count warning for constrained devices
+    const caps = getDeviceCapabilities();
+    const pageCount = state.pdfDoc.getPageCount();
+    if (pageCount > caps.upload.warnPageCount) {
+      const proceed = await showWarning(
+        'Large Document',
+        `This PDF has ${pageCount} pages. Processing may be slow on your device.`
+      );
+      if (!proceed) {
+        switchView('grid');
+        return;
+      }
+    }
 
     if (
       state.pdfDoc.isEncrypted &&
@@ -852,6 +868,32 @@ export function setupFileInputHandler(toolId: string) {
 
       newFiles = validFiles;
       if (newFiles.length === 0) return;
+    }
+
+    // Device-aware file size warnings
+    const caps = getDeviceCapabilities();
+    const warnBytes = caps.upload.warnFileSizeMB * 1024 * 1024;
+    const largeFile = newFiles.find((f) => f.size > warnBytes);
+    if (largeFile) {
+      const sizeMB = (largeFile.size / (1024 * 1024)).toFixed(1);
+      const proceed = await showWarning(
+        'Large File',
+        `"${largeFile.name}" is ${sizeMB} MB. Large files may cause slowness or crashes on your device.`
+      );
+      if (!proceed) return;
+    }
+
+    if (newFiles.length > 1) {
+      const totalSize = newFiles.reduce((sum, f) => sum + f.size, 0);
+      const warnTotalBytes = caps.upload.warnTotalSizeMB * 1024 * 1024;
+      if (totalSize > warnTotalBytes) {
+        const totalMB = (totalSize / (1024 * 1024)).toFixed(1);
+        const proceed = await showWarning(
+          'Large Upload',
+          `Total upload size is ${totalMB} MB. This may cause slowness or crashes on your device.`
+        );
+        if (!proceed) return;
+      }
     }
 
     if (!isMultiFileTool || isFirstUpload) {
