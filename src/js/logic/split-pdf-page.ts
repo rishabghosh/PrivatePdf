@@ -1,26 +1,22 @@
 import { showLoader, hideLoader, showAlert } from '../ui.js';
 import { t } from '../i18n/i18n';
 import { createIcons, icons } from 'lucide';
-import * as pdfjsLib from 'pdfjs-dist';
 import { downloadFile, getPDFDocument, formatBytes } from '../utils/helpers.js';
-import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
 import { state } from '../state.js';
-import {
-  renderPagesProgressively,
-  cleanupLazyRendering,
-} from '../utils/render-utils.js';
-import { initPagePreview } from '../utils/page-preview.js';
-import { isCpdfAvailable } from '../utils/cpdf-helper.js';
-import { showWasmRequiredDialog } from '../utils/wasm-provider.js';
-import JSZip from 'jszip';
-import { PDFDocument as PDFLibDocument } from 'pdf-lib';
-import { loadPdfDocument } from '../utils/load-pdf-document.js';
 import { getDeviceCapabilities } from '../utils/device-capability.js';
+import type { PDFDocument as PDFLibDocument } from 'pdf-lib';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// Lazy loaders for heavy dependencies (deferred until after file upload)
+const lazyJSZip = () =>
+  import('jszip').then((m) => ('default' in m ? m.default : m) as typeof import('jszip'));
+const lazyPDFLibDocument = () =>
+  import('pdf-lib').then((m) => m.PDFDocument as unknown as typeof PDFLibDocument);
+const lazyRenderUtils = () => import('../utils/render-utils.js');
+const lazyPagePreview = () => import('../utils/page-preview.js');
+const lazyPasswordPrompt = () => import('../utils/password-prompt.js');
+const lazyLoadPdfDocument = () => import('../utils/load-pdf-document.js');
+const lazyCpdfHelper = () => import('../utils/cpdf-helper.js');
+const lazyWasmProvider = () => import('../utils/wasm-provider.js');
 
 document.addEventListener('DOMContentLoaded', () => {
   let visualSelectorRendered = false;
@@ -90,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Load PDF Document
         try {
+          const { loadPdfWithPasswordPrompt } = await lazyPasswordPrompt();
+          const { loadPdfDocument } = await lazyLoadPdfDocument();
           const result = await loadPdfWithPasswordPrompt(file);
           if (!result) {
             state.files = [];
@@ -128,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.textContent = '';
 
     // Cleanup any previous lazy loading observers
+    const { cleanupLazyRendering, renderPagesProgressively } = await lazyRenderUtils();
     cleanupLazyRendering();
 
     showLoader('Rendering page previews...');
@@ -138,6 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.files.length > 0) {
           const file = state.files[0];
           hideLoader();
+          const { loadPdfWithPasswordPrompt } = await lazyPasswordPrompt();
+          const { loadPdfDocument } = await lazyLoadPdfDocument();
           const result = await loadPdfWithPasswordPrompt(file);
           if (!result) {
             showLoader('Rendering page previews...');
@@ -217,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       });
 
+      const { initPagePreview } = await lazyPagePreview();
       initPagePreview(container, pdf);
     } catch (error) {
       console.error('Error rendering visual selector:', error);
@@ -283,6 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (!state.pdfDoc) throw new Error('No PDF document loaded.');
 
+      const [JSZip, PDFLibDoc] = await Promise.all([
+        lazyJSZip(),
+        lazyPDFLibDocument(),
+      ]);
+
       const totalPages = state.pdfDoc.getPageCount();
       let indicesToExtract: number[] = [];
 
@@ -330,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let i = 0; i < rangeGroups.length; i++) {
               const group = rangeGroups[i];
-              const newPdf = await PDFLibDocument.create();
+              const newPdf = await PDFLibDoc.create();
               const copiedPages = await newPdf.copyPages(state.pdfDoc, group);
               copiedPages.forEach((page) => newPdf.addPage(page));
               const pdfBytes = await newPdf.save();
@@ -383,12 +390,14 @@ document.addEventListener('DOMContentLoaded', () => {
           ).map((el) => parseInt((el as HTMLElement).dataset.pageIndex || '0'));
           break;
         case 'bookmarks': {
-          if (!isCpdfAvailable()) {
+          const cpdfModule = await lazyCpdfHelper();
+          if (!cpdfModule.isCpdfAvailable()) {
+            const { showWasmRequiredDialog } = await lazyWasmProvider();
             showWasmRequiredDialog('cpdf');
             hideLoader();
             return;
           }
-          const { getCpdf } = await import('../utils/cpdf-helper.js');
+          const { getCpdf } = cpdfModule;
           const cpdf = await getCpdf();
           const pdfBytes = await state.pdfDoc.save();
           const pdf = cpdf.fromMemory(new Uint8Array(pdfBytes), '');
@@ -427,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? splitPages[i + 1] - 1
                 : totalPages - 1;
 
-            const newPdf = await PDFLibDocument.create();
+            const newPdf = await PDFLibDoc.create();
             const pageIndices = Array.from(
               { length: endPage - startPage + 1 },
               (_, idx) => startPage + idx
@@ -468,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
               (_, idx) => startPage + idx
             );
 
-            const newPdf = await PDFLibDocument.create();
+            const newPdf = await PDFLibDoc.create();
             const copiedPages = await newPdf.copyPages(
               state.pdfDoc,
               pageIndices
@@ -504,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoader('Creating ZIP file...');
         const zip = new JSZip();
         for (const index of uniqueIndices) {
-          const newPdf = await PDFLibDocument.create();
+          const newPdf = await PDFLibDoc.create();
           const [copiedPage] = await newPdf.copyPages(state.pdfDoc, [
             index as number,
           ]);
@@ -515,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         downloadFile(zipBlob, 'split-pages.zip');
       } else {
-        const newPdf = await PDFLibDocument.create();
+        const newPdf = await PDFLibDoc.create();
         const copiedPages = await newPdf.copyPages(
           state.pdfDoc,
           uniqueIndices as number[]

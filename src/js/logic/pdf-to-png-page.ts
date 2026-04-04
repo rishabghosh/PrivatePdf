@@ -7,16 +7,23 @@ import {
   getCleanPdfFilename,
 } from '../utils/helpers.js';
 import { createIcons, icons } from 'lucide';
-import JSZip from 'jszip';
-import * as pdfjsLib from 'pdfjs-dist';
-import { PDFPageProxy } from 'pdfjs-dist';
+import type { PDFPageProxy } from 'pdfjs-dist';
 import { t } from '../i18n/i18n';
 import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+
+async function getPdfjs() {
+  if (!pdfjsLoaded) {
+    pdfjsLoaded = await import('pdfjs-dist');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
+  }
+  return pdfjsLoaded;
+}
 
 let files: File[] = [];
 
@@ -106,22 +113,32 @@ async function convert() {
     const result = await loadPdfWithPasswordPrompt(files[0], files, 0);
     if (!result) return;
     showLoader(t('tools:pdfToPng.loader.converting'));
+    await getPdfjs();
     const { pdf } = result;
 
+    const caps = getDeviceCapabilities();
     const scaleInput = document.getElementById('png-scale') as HTMLInputElement;
-    const scale = scaleInput ? parseFloat(scaleInput.value) : 2.0;
+    const rawScale = scaleInput ? parseFloat(scaleInput.value) : 2.0;
+    const scale =
+      caps.tier === 'high'
+        ? rawScale
+        : Math.min(rawScale, caps.image.pdfToImageScale);
 
     if (pdf.numPages === 1) {
       const page = await pdf.getPage(1);
       const blob = await renderPage(page, scale);
       downloadFile(blob, getCleanPdfFilename(files[0].name) + '.png');
     } else {
+      const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const blob = await renderPage(page, scale);
         if (blob) {
           zip.file(`page_${i}.png`, blob);
+        }
+        if (caps.tier === 'low') {
+          await new Promise((r) => setTimeout(r, 0));
         }
       }
 
@@ -164,6 +181,8 @@ async function renderPage(
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, 'image/png')
   );
+  canvas.width = 0;
+  canvas.height = 0;
   return blob;
 }
 

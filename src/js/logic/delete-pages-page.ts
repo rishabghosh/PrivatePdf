@@ -10,6 +10,7 @@ import { deletePdfPages } from '../utils/pdf-operations.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import { DeletePagesState } from '@/types';
 import { loadPdfDocument } from '../utils/load-pdf-document.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -155,10 +156,11 @@ async function renderThumbnails() {
   const container = document.getElementById('delete-pages-preview');
   if (!container) return;
   container.innerHTML = '';
+  const caps = getDeviceCapabilities();
 
   for (let i = 1; i <= deleteState.totalPages; i++) {
     const page = await deleteState.pdfJsDoc.getPage(i);
-    const viewport = page.getViewport({ scale: 1 });
+    const viewport = page.getViewport({ scale: caps.render.thumbnailScale });
 
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width;
@@ -176,6 +178,8 @@ async function renderThumbnails() {
 
     const img = document.createElement('img');
     img.src = canvas.toDataURL();
+    canvas.width = 0;
+    canvas.height = 0;
     img.className = 'max-w-full max-h-full object-contain';
 
     const pageLabel = document.createElement('span');
@@ -194,6 +198,10 @@ async function renderThumbnails() {
     container.appendChild(wrapper);
 
     wrapper.addEventListener('click', () => togglePageDelete(i, wrapper));
+
+    if (caps.tier === 'low') {
+      await new Promise(r => setTimeout(r, 0));
+    }
   }
   createIcons({ icons });
 }

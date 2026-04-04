@@ -7,16 +7,23 @@ import {
   getCleanPdfFilename,
 } from '../utils/helpers.js';
 import { createIcons, icons } from 'lucide';
-import JSZip from 'jszip';
-import * as pdfjsLib from 'pdfjs-dist';
-import { PDFPageProxy } from 'pdfjs-dist';
+import type { PDFPageProxy } from 'pdfjs-dist';
 import { t } from '../i18n/i18n';
 import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+
+async function getPdfjs() {
+  if (!pdfjsLoaded) {
+    pdfjsLoaded = await import('pdfjs-dist');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
+  }
+  return pdfjsLoaded;
+}
 
 let files: File[] = [];
 
@@ -115,17 +122,23 @@ async function convert() {
     ) as HTMLInputElement;
     const quality = qualityInput ? parseFloat(qualityInput.value) : 0.85;
 
+    const caps = getDeviceCapabilities();
+
     if (pdf.numPages === 1) {
       const page = await pdf.getPage(1);
       const blob = await renderPage(page, quality);
       downloadFile(blob, getCleanPdfFilename(files[0].name) + '.webp');
     } else {
+      const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const blob = await renderPage(page, quality);
         if (blob) {
           zip.file(`page_${i}.webp`, blob);
+        }
+        if (caps.tier === 'low') {
+          await new Promise(r => setTimeout(r, 0));
         }
       }
 
@@ -153,7 +166,8 @@ async function renderPage(
   page: PDFPageProxy,
   quality: number
 ): Promise<Blob | null> {
-  const viewport = page.getViewport({ scale: 2.0 });
+  const caps = getDeviceCapabilities();
+  const viewport = page.getViewport({ scale: caps.image.pdfToImageScale });
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   canvas.height = viewport.height;
@@ -168,6 +182,8 @@ async function renderPage(
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, 'image/webp', quality)
   );
+  canvas.width = 0;
+  canvas.height = 0;
   return blob;
 }
 

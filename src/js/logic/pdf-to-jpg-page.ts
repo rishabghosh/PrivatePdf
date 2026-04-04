@@ -7,17 +7,22 @@ import {
   getCleanPdfFilename,
 } from '../utils/helpers.js';
 import { createIcons, icons } from 'lucide';
-import JSZip from 'jszip';
-import * as pdfjsLib from 'pdfjs-dist';
-import { PDFPageProxy } from 'pdfjs-dist';
+import type { PDFPageProxy } from 'pdfjs-dist';
 import { t } from '../i18n/i18n';
 import { getDeviceCapabilities } from '../utils/device-capability.js';
-import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+
+async function getPdfjs() {
+  if (!pdfjsLoaded) {
+    pdfjsLoaded = await import('pdfjs-dist');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
+  }
+  return pdfjsLoaded;
+}
 
 let files: File[] = [];
 
@@ -106,6 +111,7 @@ async function convert() {
     return;
   }
   try {
+    const { loadPdfWithPasswordPrompt } = await import('../utils/password-prompt.js');
     const result = await loadPdfWithPasswordPrompt(files[0], files, 0);
     if (!result) return;
     showLoader(t('tools:pdfToJpg.loader.converting'));
@@ -121,6 +127,7 @@ async function convert() {
       const blob = await renderPage(page, quality);
       downloadFile(blob, getCleanPdfFilename(files[0].name) + '.jpg');
     } else {
+      const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
       const caps = getDeviceCapabilities();
       for (let i = 1; i <= pdf.numPages; i++) {

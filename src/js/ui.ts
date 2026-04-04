@@ -252,6 +252,8 @@ export const renderPageThumbnails = async (
 
     const img = document.createElement('img');
     img.src = canvas.toDataURL();
+    canvas.width = 0;
+    canvas.height = 0;
     img.className = 'rounded-md shadow-md max-w-full h-auto';
 
     imgContainer.appendChild(img);
@@ -429,9 +431,7 @@ export const renderPageThumbnails = async (
   try {
     // Render pages progressively with lazy loading
     await renderPagesProgressively(pdf, container, createWrapper, {
-      batchSize: 8,
       useLazyLoading: true,
-      lazyLoadMargin: '300px',
       onProgress: (current, total) => {
         showLoader(`Rendering page previews: ${current}/${total}`);
       },

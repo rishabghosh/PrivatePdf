@@ -123,6 +123,8 @@ export async function renderDuplicateOrganizeThumbnails() {
 
     const img = document.createElement('img');
     img.src = canvas.toDataURL();
+    canvas.width = 0;
+    canvas.height = 0;
     img.className = 'max-w-full max-h-full object-contain';
     imgContainer.appendChild(img);
 
@@ -163,9 +165,7 @@ export async function renderDuplicateOrganizeThumbnails() {
   try {
     // Render pages progressively with lazy loading
     await renderPagesProgressively(pdfjsDoc, grid, createWrapper, {
-      batchSize: 8,
       useLazyLoading: true,
-      lazyLoadMargin: '400px',
       onProgress: (current, total) => {
         showLoader(`Rendering page previews: ${current}/${total}`);
       },

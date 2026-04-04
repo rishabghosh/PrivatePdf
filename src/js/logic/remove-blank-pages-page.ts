@@ -4,6 +4,7 @@ import { createIcons, icons } from 'lucide';
 import { initPagePreview } from '../utils/page-preview.js';
 import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
 import { loadPdfDocument } from '../utils/load-pdf-document.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -141,6 +142,7 @@ async function isPageBlank(
   page: pdfjsLib.PDFPageProxy,
   maxNonWhitePercent = 0.5
 ): Promise<boolean> {
+  const caps = getDeviceCapabilities();
   const viewport = page.getViewport({ scale: 0.5 });
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -153,20 +155,24 @@ async function isPageBlank(
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
-  const totalPixels = data.length / 4;
+  const stride = caps.tier === 'low' ? 16 : caps.tier === 'medium' ? 8 : 4;
+  const sampledPixels = Math.ceil(data.length / stride);
 
   let nonWhitePixels = 0;
-  for (let i = 0; i < data.length; i += 4) {
+  for (let i = 0; i < data.length; i += stride) {
     const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
     if (brightness < 240) nonWhitePixels++;
   }
 
-  const nonWhitePercent = (nonWhitePixels / totalPixels) * 100;
+  const nonWhitePercent = (nonWhitePixels / sampledPixels) * 100;
+  canvas.width = 0;
+  canvas.height = 0;
   return nonWhitePercent <= maxNonWhitePercent;
 }
 
 async function generateThumbnail(page: pdfjsLib.PDFPageProxy): Promise<string> {
-  const viewport = page.getViewport({ scale: 1 });
+  const caps = getDeviceCapabilities();
+  const viewport = page.getViewport({ scale: caps.render.thumbnailScale });
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
@@ -175,7 +181,10 @@ async function generateThumbnail(page: pdfjsLib.PDFPageProxy): Promise<string> {
   canvas.height = viewport.height;
 
   await page.render({ canvas: null, canvasContext: ctx, viewport }).promise;
-  return canvas.toDataURL('image/jpeg', 0.7);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+  canvas.width = 0;
+  canvas.height = 0;
+  return dataUrl;
 }
 
 async function detectBlankPages() {
@@ -198,12 +207,16 @@ async function detectBlankPages() {
     pageState.pageThumbnails.forEach((url) => URL.revokeObjectURL(url));
     pageState.pageThumbnails.clear();
 
+    const caps = getDeviceCapabilities();
     for (let i = 1; i <= totalPages; i++) {
       const page = await pdfDoc.getPage(i);
       if (await isPageBlank(page, maxNonWhitePercent)) {
         pageState.detectedBlankPages.push(i - 1); // 0-indexed
         const thumbnail = await generateThumbnail(page);
         pageState.pageThumbnails.set(i - 1, thumbnail);
+      }
+      if (caps.tier === 'low') {
+        await new Promise(r => setTimeout(r, 0));
       }
     }
 

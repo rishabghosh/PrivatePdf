@@ -1,31 +1,28 @@
 import { showLoader, hideLoader, showAlert } from '../ui.js';
 import { downloadFile } from '../utils/helpers.js';
 import { state } from '../state.js';
-import { batchDecryptIfNeeded } from '../utils/password-prompt.js';
-import {
-  renderPagesProgressively,
-  cleanupLazyRendering,
-} from '../utils/render-utils.js';
-import { initPagePreview } from '../utils/page-preview.js';
-import { isCpdfAvailable } from '../utils/cpdf-helper.js';
-import {
-  showWasmRequiredDialog,
-  WasmProvider,
-} from '../utils/wasm-provider.js';
 import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 import { createIcons, icons } from 'lucide';
-import * as pdfjsLib from 'pdfjs-dist';
-import Sortable from 'sortablejs';
 import type { MergeJob, MergeFile, MergeMessage, MergeResponse } from '@/types';
+import type * as PdfjsLib from 'pdfjs-dist';
+import type Sortable from 'sortablejs';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// Lazy singleton for pdfjs-dist — only loaded after file upload
+let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+async function getPdfjs() {
+  if (!pdfjsLoaded) {
+    pdfjsLoaded = await import('pdfjs-dist');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = new URL(
+      'pdfjs-dist/build/pdf.worker.min.mjs',
+      import.meta.url
+    ).toString();
+  }
+  return pdfjsLoaded;
+}
 
 interface MergeState {
-  pdfDocs: Record<string, pdfjsLib.PDFDocumentProxy>;
+  pdfDocs: Record<string, PdfjsLib.PDFDocumentProxy>;
   pdfBytes: Record<string, ArrayBuffer>;
   activeMode: 'file' | 'page';
   sortableInstances: {
@@ -60,9 +57,11 @@ function getMergeWorker(): Worker {
   return mergeWorker;
 }
 
-function initializeFileListSortable() {
+async function initializeFileListSortable() {
   const fileList = document.getElementById('file-list');
   if (!fileList) return;
+
+  const { default: Sortable } = await import('sortablejs');
 
   if (mergeState.sortableInstances.fileList) {
     mergeState.sortableInstances.fileList.destroy();
@@ -83,9 +82,11 @@ function initializeFileListSortable() {
   });
 }
 
-function initializePageThumbnailsSortable() {
+async function initializePageThumbnailsSortable() {
   const container = document.getElementById('page-merge-preview');
   if (!container) return;
+
+  const { default: Sortable } = await import('sortablejs');
 
   if (mergeState.sortableInstances.pageThumbnails) {
     mergeState.sortableInstances.pageThumbnails.destroy();
@@ -121,7 +122,7 @@ async function renderPageMergeThumbnails() {
   if (!filesChanged && mergeState.cachedThumbnails !== null) {
     // Simple check to see if it's already rendered to avoid flicker.
     if (container.firstChild) {
-      initializePageThumbnailsSortable();
+      await initializePageThumbnailsSortable();
       return;
     }
   }
@@ -132,6 +133,9 @@ async function renderPageMergeThumbnails() {
 
   mergeState.isRendering = true;
   container.textContent = '';
+
+  const { renderPagesProgressively, cleanupLazyRendering } = await import('../utils/render-utils.js');
+  const { initPagePreview } = await import('../utils/page-preview.js');
 
   cleanupLazyRendering();
 
@@ -226,7 +230,7 @@ async function renderPageMergeThumbnails() {
     mergeState.cachedThumbnails = true;
     mergeState.lastFileHash = currentFileHash;
 
-    initializePageThumbnailsSortable();
+    await initializePageThumbnailsSortable();
   } catch (error) {
     console.error('Error rendering page thumbnails:', error);
     showAlert('Error', 'Failed to render page thumbnails');
@@ -290,6 +294,9 @@ const resetState = async () => {
 
 export async function merge() {
   // Check if CPDF is configured
+  const { isCpdfAvailable } = await import('../utils/cpdf-helper.js');
+  const { showWasmRequiredDialog, WasmProvider } = await import('../utils/wasm-provider.js');
+
   if (!isCpdfAvailable()) {
     showWasmRequiredDialog('cpdf');
     return;
@@ -457,9 +464,11 @@ export async function refreshMergeUI() {
     mergeState.pdfBytes = {};
 
     hideLoader();
+    const { batchDecryptIfNeeded } = await import('../utils/password-prompt.js');
     state.files = await batchDecryptIfNeeded(state.files);
     showLoader('Loading PDF documents...');
 
+    const pdfjsLib = await getPdfjs();
     for (let i = 0; i < state.files.length; i++) {
       const file = state.files[i];
       const fileKey = `${i}_${file.name}`;
@@ -555,7 +564,7 @@ export async function refreshMergeUI() {
   });
 
   createIcons({ icons });
-  initializeFileListSortable();
+  await initializeFileListSortable();
 
   const newFileModeBtn = fileModeBtn.cloneNode(true) as HTMLElement;
   const newPageModeBtn = pageModeBtn.cloneNode(true) as HTMLElement;

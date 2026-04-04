@@ -1,23 +1,16 @@
 import { createIcons, icons } from 'lucide';
 import { showAlert, showLoader, hideLoader } from '../ui.js';
 import { formatBytes, downloadFile } from '../utils/helpers.js';
-import { initPagePreview } from '../utils/page-preview.js';
-import { PDFDocument } from 'pdf-lib';
-import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
-import * as pdfjsLib from 'pdfjs-dist';
-import Sortable from 'sortablejs';
-import { loadPdfDocument } from '../utils/load-pdf-document.js';
 import { getDeviceCapabilities } from '../utils/device-capability.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+import type { PDFDocument } from 'pdf-lib';
+import type * as pdfjsLibType from 'pdfjs-dist';
+import type Sortable from 'sortablejs';
 
 interface OrganizeState {
   file: File | null;
   pdfDoc: PDFDocument | null;
-  pdfJsDoc: pdfjsLib.PDFDocumentProxy | null;
+  pdfJsDoc: pdfjsLibType.PDFDocumentProxy | null;
   totalPages: number;
   sortableInstance: Sortable | null;
 }
@@ -174,10 +167,16 @@ async function handleFile(file: File) {
   organizeState.file = file;
 
   try {
+    const { loadPdfWithPasswordPrompt } = await import(
+      '../utils/password-prompt.js'
+    );
     const result = await loadPdfWithPasswordPrompt(file);
     if (!result) return;
     showLoader('Loading PDF...');
 
+    const { loadPdfDocument } = await import(
+      '../utils/load-pdf-document.js'
+    );
     organizeState.pdfDoc = await loadPdfDocument(result.bytes);
     organizeState.pdfJsDoc = result.pdf;
     organizeState.file = result.file;
@@ -338,15 +337,17 @@ async function renderThumbnails() {
 
   createIcons({ icons });
   initializeSortable();
+  const { initPagePreview } = await import('../utils/page-preview.js');
   initPagePreview(grid, organizeState.pdfJsDoc);
 }
 
-function initializeSortable() {
+async function initializeSortable() {
   const grid = document.getElementById('page-grid');
   if (!grid) return;
 
   if (organizeState.sortableInstance) organizeState.sortableInstance.destroy();
 
+  const { default: Sortable } = await import('sortablejs');
   organizeState.sortableInstance = Sortable.create(grid, {
     animation: 150,
     ghostClass: 'sortable-ghost',
@@ -382,6 +383,7 @@ async function saveChanges() {
       return;
     }
 
+    const { PDFDocument } = await import('pdf-lib');
     const newPdf = await PDFDocument.create();
     const copiedPages = await newPdf.copyPages(
       organizeState.pdfDoc,
