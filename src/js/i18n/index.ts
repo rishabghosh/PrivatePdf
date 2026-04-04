@@ -1,5 +1,6 @@
 export {
   initI18n,
+  loadToolsNamespace,
   t,
   changeLanguage,
   applyTranslations,

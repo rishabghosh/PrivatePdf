@@ -1,12 +1,11 @@
 import { dom, switchView, hideAlert } from './ui.js';
-import { ShortcutsManager } from './logic/shortcuts.js';
 import '../css/styles.css';
-import { formatShortcutDisplay, formatStars } from './utils/helpers.js';
 import {
   initI18n,
   applyTranslations,
   rewriteLinks,
   injectLanguageSwitcher,
+  loadToolsNamespace,
   t,
 } from './i18n/index.js';
 import {
@@ -17,12 +16,31 @@ import {
 import { isLowTier } from './utils/device-capability.js';
 declare const __BRAND_NAME__: string;
 
-// Load Phosphor icons asynchronously — not needed for initial render
-// @ts-expect-error -- no type declarations for this side-effect import
-import('@phosphor-icons/web/regular');
+// Inlined to avoid importing helpers.ts (which transitively imports pdfjs-dist, lucide, qpdf-wasm)
+function formatStars(num: number) {
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toLocaleString();
+}
+
+function formatShortcutDisplay(shortcut: string, isMac: boolean): string {
+  if (!shortcut) return '';
+  return shortcut
+    .replace('mod', isMac ? '⌘' : 'Ctrl')
+    .replace('ctrl', isMac ? '^' : 'Ctrl')
+    .replace('alt', isMac ? '⌥' : 'Alt')
+    .replace('shift', 'Shift')
+    .split('+')
+    .map((k) => k.charAt(0).toUpperCase() + k.slice(1))
+    .join(isMac ? '' : '+');
+}
 
 // Module-level reference for categories, loaded dynamically when needed
 let _categories: Awaited<typeof import('./config/tools.js')>['categories'] | null = null;
+
+// Lazy-loaded ShortcutsManager — avoids static import of config/tools.ts (127 tools)
+let ShortcutsManager: Awaited<typeof import('./logic/shortcuts.js')>['ShortcutsManager'];
 
 const init = async () => {
   await initI18n();
@@ -45,7 +63,7 @@ const init = async () => {
     const backHome = t('disabledTool.backHome') || 'Back to Home';
     main.innerHTML = `
       <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <i class="ph ph-prohibit text-6xl text-gray-500 mb-4"></i>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-500 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
         <h1 class="text-2xl font-bold text-white mb-2">${heading}</h1>
         <p class="text-gray-400 mb-6">${message}</p>
         <a href="${import.meta.env.BASE_URL}" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">${backHome}</a>
@@ -290,6 +308,10 @@ const init = async () => {
 
   // Homepage-only tool grid rendering (not used on individual tool pages)
   if (dom.toolGrid) {
+    // Load Phosphor icons only on homepage (tool grid uses ph-* icon classes)
+    // @ts-expect-error -- no type declarations for this side-effect import
+    import('@phosphor-icons/web/regular');
+
     const toolsModule = await import('./config/tools.js');
     _categories = toolsModule.categories;
     dom.toolGrid.textContent = '';
@@ -578,15 +600,22 @@ const init = async () => {
       });
   }
 
-  // Initialize Shortcuts System — defer on low-tier devices
-  if (isLowTier()) {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => ShortcutsManager.init());
+  // Initialize Shortcuts System — skip entirely on mobile (no keyboard)
+  if (!isMobile) {
+    const initShortcuts = async () => {
+      const mod = await import('./logic/shortcuts.js');
+      ShortcutsManager = mod.ShortcutsManager;
+      await ShortcutsManager.init();
+    };
+    if (isLowTier()) {
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(() => initShortcuts());
+      } else {
+        setTimeout(() => initShortcuts(), 200);
+      }
     } else {
-      setTimeout(() => ShortcutsManager.init(), 200);
+      await initShortcuts();
     }
-  } else {
-    ShortcutsManager.init();
   }
 
   // Tab switching for settings modal
@@ -705,7 +734,8 @@ const init = async () => {
 
   // Shortcuts UI Handlers
   if (dom.openShortcutsBtn) {
-    dom.openShortcutsBtn.addEventListener('click', () => {
+    dom.openShortcutsBtn.addEventListener('click', async () => {
+      await loadToolsNamespace();
       renderShortcutsList();
       dom.shortcutsModal.classList.remove('hidden');
     });
@@ -1162,7 +1192,10 @@ const init = async () => {
     import('lucide').then(({ createIcons, icons }) => createIcons({ icons }));
   }
 
-  const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
+  // Skip scroll listener on low-tier devices to reduce main thread work
+  const scrollToTopBtn = !isLowTier()
+    ? document.getElementById('scroll-to-top-btn')
+    : null;
 
   if (scrollToTopBtn) {
     let lastScrollY = window.scrollY;

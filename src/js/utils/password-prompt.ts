@@ -1,4 +1,3 @@
-import { decryptPdfBytes } from './pdf-decrypt.js';
 import { readFileAsArrayBuffer, getPDFDocument } from './helpers.js';
 import { createIcons, icons } from 'lucide';
 import { PasswordResponses } from 'pdfjs-dist';
@@ -197,6 +196,9 @@ async function decryptFileWithPassword(
   file: File,
   password: string
 ): Promise<File> {
+  // Dynamically import pdf-decrypt to avoid pulling cpdf-helper (and its
+  // transitive vendor-mermaid/rete/xlsx) into every page's static graph
+  const { decryptPdfBytes } = await import('./pdf-decrypt.js');
   const fileBytes = (await readFileAsArrayBuffer(file)) as ArrayBuffer;
   const inputBytes = new Uint8Array(fileBytes);
   const result = await decryptPdfBytes(inputBytes, password);

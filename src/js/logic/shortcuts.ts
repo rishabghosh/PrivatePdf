@@ -1,5 +1,14 @@
-import { categories } from '../config/tools.js';
 import type { ToolEntry } from '@/types';
+
+// Lazy-loaded categories to avoid pulling config/tools.ts into the initial bundle
+let _categories: Awaited<typeof import('../config/tools.js')>['categories'] | null = null;
+async function getCategories() {
+  if (!_categories) {
+    const mod = await import('../config/tools.js');
+    _categories = mod.categories;
+  }
+  return _categories;
+}
 
 export class ShortcutsManager {
   private static STORAGE_KEY = 'bentopdf_shortcuts';
@@ -16,9 +25,9 @@ export class ShortcutsManager {
     return 'unknown';
   }
 
-  static init() {
+  static async init() {
     this.loadDefaults();
-    this.loadFromStorage();
+    await this.loadFromStorage();
     this.setupGlobalListener();
   }
 
@@ -28,13 +37,14 @@ export class ShortcutsManager {
     this.defaultShortcuts.set('compress', 'mod+shift+c');
   }
 
-  private static loadFromStorage() {
+  private static async loadFromStorage() {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         this.shortcuts = new Map(Object.entries(parsed));
 
+        const categories = await getCategories();
         const allTools = categories.flatMap((c) => c.tools);
         const validToolIds = allTools.map((t) => this.getToolId(t));
         for (const [toolId] of this.shortcuts.entries()) {
@@ -94,10 +104,11 @@ export class ShortcutsManager {
     return this.shortcuts;
   }
 
-  static exportSettings() {
+  static async exportSettings() {
     // Create a map with all tools, defaulting to empty string if not set
     const exportObj: Record<string, string> = {};
 
+    const categories = await getCategories();
     const allTools = categories.flatMap((c) => c.tools);
 
     allTools.forEach((tool) => {
@@ -184,8 +195,9 @@ export class ShortcutsManager {
             e.preventDefault();
             e.stopPropagation();
 
-            // Find the tool in categories
-            const allTools = categories.flatMap((c) => c.tools);
+            // Find the tool in categories (_categories populated during init)
+            if (!_categories) return;
+            const allTools = _categories.flatMap((c) => c.tools);
             const tool = allTools.find((t) => this.getToolId(t) === toolId);
 
             if (tool && tool.href) {

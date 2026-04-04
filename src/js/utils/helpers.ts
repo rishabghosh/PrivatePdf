@@ -6,6 +6,11 @@ import { state, resetState } from '../state.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { DocumentInitParameters } from 'pdfjs-dist/types/src/display/api';
 
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
+
 const STANDARD_SIZES = {
   A4: { width: 595.28, height: 841.89 },
   Letter: { width: 612, height: 792 },

@@ -99,44 +99,55 @@ export const getLanguageFromUrl = (): SupportedLanguage => {
 
 let initialized = false;
 
+// Detect if this is the homepage (has tool grid) — tools namespace only needed there
+const isHomepage = () => !!document.getElementById('tool-grid');
+
 export const initI18n = async (): Promise<typeof i18next> => {
   if (initialized) return i18next;
 
   const currentLang = getLanguageFromUrl();
+  const needsTools = isHomepage();
 
   localStorage.setItem('i18nextLng', currentLang);
 
   if (currentLang === 'en') {
-    // For English, fetch both translation files in parallel to avoid the
-    // sequential loading that i18next-http-backend does (common → then tools)
     const basePath = import.meta.env.BASE_URL.replace(/\/?$/, '/');
-    const [commonData, toolsData] = await Promise.all([
+    const fetches: Promise<Record<string, unknown>>[] = [
       fetch(`${basePath}locales/en/common.json`).then((r) => r.json()),
-      fetch(`${basePath}locales/en/tools.json`).then((r) => r.json()),
-    ]);
+    ];
+    if (needsTools) {
+      fetches.push(
+        fetch(`${basePath}locales/en/tools.json`).then((r) => r.json())
+      );
+    }
+    const [commonData, toolsData] = await Promise.all(fetches);
+
+    const ns = needsTools ? ['common', 'tools'] : ['common'];
+    const resources: Record<string, Record<string, unknown>> = {
+      en: { common: commonData },
+    };
+    if (toolsData) {
+      resources.en.tools = toolsData;
+    }
 
     await i18next.init({
       lng: 'en',
       fallbackLng: 'en',
       supportedLngs: supportedLanguages as unknown as string[],
-      ns: ['common', 'tools'],
+      ns,
       defaultNS: 'common',
-      resources: {
-        en: {
-          common: commonData,
-          tools: toolsData,
-        },
-      },
+      resources,
       interpolation: {
         escapeValue: false,
       },
     });
   } else {
+    const ns = needsTools ? ['common', 'tools'] : ['common'];
     await i18next.use(HttpBackend).init({
       lng: currentLang,
       fallbackLng: 'en',
       supportedLngs: supportedLanguages as unknown as string[],
-      ns: ['common', 'tools'],
+      ns,
       defaultNS: 'common',
       preload: [currentLang],
       backend: {
@@ -147,11 +158,30 @@ export const initI18n = async (): Promise<typeof i18next> => {
       },
     });
 
-    await i18next.loadNamespaces('tools');
+    if (needsTools) {
+      await i18next.loadNamespaces('tools');
+    }
   }
 
   initialized = true;
   return i18next;
+};
+
+/**
+ * Load the 'tools' i18n namespace on demand (for shortcuts modal, etc.)
+ */
+export const loadToolsNamespace = async (): Promise<void> => {
+  if (!i18next.hasResourceBundle(i18next.language, 'tools')) {
+    if (i18next.language === 'en') {
+      const basePath = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+      const toolsData = await fetch(
+        `${basePath}locales/en/tools.json`
+      ).then((r) => r.json());
+      i18next.addResourceBundle('en', 'tools', toolsData);
+    } else {
+      await i18next.loadNamespaces('tools');
+    }
+  }
 };
 
 export const t = (key: string, options?: Record<string, unknown>): string => {

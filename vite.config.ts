@@ -666,17 +666,20 @@ export default defineConfig(() => {
         },
         output: {
           manualChunks(id) {
-            if (id.includes('pdfjs-dist')) return 'vendor-pdfjs';
-            if (id.includes('lucide')) return 'vendor-lucide';
-            if (id.includes('@phosphor-icons')) return 'vendor-phosphor';
-            if (id.includes('i18next')) return 'vendor-i18n';
-            if (id.includes('sortablejs')) return 'vendor-sortable';
-            if (id.includes('pdf-lib')) return 'vendor-pdf-lib';
-            if (id.includes('tesseract')) return 'vendor-tesseract';
-            if (id.includes('mermaid')) return 'vendor-mermaid';
-            if (id.includes('xlsx')) return 'vendor-xlsx';
-            if (id.includes('markdown-it')) return 'vendor-markdown';
-            if (id.includes('rete')) return 'vendor-rete';
+            // Vendor library splits (node_modules only)
+            if (id.includes('node_modules')) {
+              if (id.includes('pdfjs-dist')) return 'vendor-pdfjs';
+              if (id.includes('lucide')) return 'vendor-lucide';
+              if (id.includes('@phosphor-icons')) return 'vendor-phosphor';
+              if (id.includes('i18next')) return 'vendor-i18n';
+              if (id.includes('sortablejs')) return 'vendor-sortable';
+              if (id.includes('pdf-lib')) return 'vendor-pdf-lib';
+              if (id.includes('tesseract')) return 'vendor-tesseract';
+              if (id.includes('mermaid')) return 'vendor-mermaid';
+              if (id.includes('xlsx')) return 'vendor-xlsx';
+              if (id.includes('markdown-it')) return 'vendor-markdown';
+              if (id.includes('rete')) return 'vendor-rete';
+            }
           },
         },
       },

@@ -1,24 +1,20 @@
 import { resetState } from './state.js';
-import { formatBytes, getPDFDocument } from './utils/helpers.js';
-import {
-  renderPagesProgressively,
-  cleanupLazyRendering,
-} from './utils/render-utils.js';
-import { initPagePreview } from './utils/page-preview.js';
-import { icons, createIcons } from 'lucide';
-import Sortable from 'sortablejs';
 import {
   getRotationState,
   updateRotationState,
 } from './utils/rotation-state.js';
-import * as pdfjsLib from 'pdfjs-dist';
 import { t } from './i18n/i18n';
 import type { FileInputOptions } from '@/types';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// Inlined to avoid importing helpers.ts which transitively pulls in pdfjs-dist
+const formatBytes = (bytes: number, decimals = 1) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
 
 // Centralizing DOM element selection
 export const dom = {
@@ -171,14 +167,16 @@ export const switchView = (view: string) => {
 };
 
 const thumbnailState: {
-  sortableInstances: Record<string, Sortable>;
+  sortableInstances: Record<string, { destroy: () => void }>;
 } = {
   sortableInstances: {},
 };
 
-function initializeOrganizeSortable(containerId: string) {
+async function initializeOrganizeSortable(containerId: string) {
   const container = document.getElementById(containerId);
   if (!container) return;
+
+  const { default: Sortable } = await import('sortablejs');
 
   if (thumbnailState.sortableInstances[containerId]) {
     thumbnailState.sortableInstances[containerId].destroy();
@@ -191,10 +189,10 @@ function initializeOrganizeSortable(containerId: string) {
     dragClass: 'sortable-drag',
     filter: '.delete-page-btn',
     preventOnFilter: true,
-    onStart: function (evt: Sortable.SortableEvent) {
+    onStart: function (evt) {
       evt.item.style.opacity = '0.5';
     },
-    onEnd: function (evt: Sortable.SortableEvent) {
+    onEnd: function (evt) {
       evt.item.style.opacity = '1';
     },
   });
@@ -219,6 +217,19 @@ export const renderPageThumbnails = async (
   if (!container) return;
 
   container.innerHTML = '';
+
+  // Lazy-load heavy dependencies only when thumbnails are actually rendered
+  const [
+    { getPDFDocument },
+    { renderPagesProgressively, cleanupLazyRendering },
+    { initPagePreview },
+    { createIcons, icons },
+  ] = await Promise.all([
+    import('./utils/helpers.js'),
+    import('./utils/render-utils.js'),
+    import('./utils/page-preview.js'),
+    import('lucide'),
+  ]);
 
   // Cleanup any previous lazy loading observers
   cleanupLazyRendering();
