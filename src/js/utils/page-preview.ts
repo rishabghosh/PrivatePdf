@@ -1,6 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PreviewState } from '@/types';
+import { getDeviceCapabilities } from './device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -75,7 +76,8 @@ async function renderPreviewPage(pageNumber: number): Promise<void> {
 
   try {
     const page = await state.pdfjsDoc.getPage(pageNumber);
-    const scale = 2.0;
+    const { tier } = getDeviceCapabilities();
+    const scale = tier === 'low' ? 1.2 : tier === 'medium' ? 1.6 : 2.0;
     const viewport = page.getViewport({ scale });
 
     const canvas = document.createElement('canvas');

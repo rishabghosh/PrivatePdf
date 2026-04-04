@@ -10,6 +10,7 @@ import {
 } from './hocr-transform.js';
 import { getPDFDocument } from './helpers.js';
 import { createConfiguredTesseractWorker } from './tesseract-runtime.js';
+import { getDeviceCapabilities } from './device-capability.js';
 
 export interface OcrOptions {
   language: string;
@@ -142,6 +143,9 @@ export async function performOcr(
   } = options;
   const progress = onProgress || (() => {});
 
+  const caps = getDeviceCapabilities();
+  const effectiveResolution = Math.min(resolution, caps.ocr.resolution);
+
   const worker = await createConfiguredTesseractWorker(
     language,
     1,
@@ -234,7 +238,7 @@ export async function performOcr(
       );
 
       const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: resolution });
+      const viewport = page.getViewport({ scale: effectiveResolution });
 
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
@@ -257,32 +261,43 @@ export async function performOcr(
 
       const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
 
-      const pngImageBytes = await new Promise<Uint8Array>(function (
+      const useJpeg = caps.ocr.useJpegBackground;
+      const imageBytes = await new Promise<Uint8Array>(function (
         resolve,
         reject
       ) {
-        canvas.toBlob(function (blob) {
-          if (!blob) {
-            reject(new Error('Failed to create image blob'));
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = function () {
-            resolve(new Uint8Array(reader.result as ArrayBuffer));
-          };
-          reader.onerror = function () {
-            reject(new Error('Failed to read image data'));
-          };
-          reader.readAsArrayBuffer(blob);
-        }, 'image/png');
+        canvas.toBlob(
+          function (blob) {
+            if (!blob) {
+              reject(new Error('Failed to create image blob'));
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = function () {
+              resolve(new Uint8Array(reader.result as ArrayBuffer));
+            };
+            reader.onerror = function () {
+              reject(new Error('Failed to read image data'));
+            };
+            reader.readAsArrayBuffer(blob);
+          },
+          useJpeg ? 'image/jpeg' : 'image/png',
+          useJpeg ? 0.85 : undefined
+        );
       });
 
       // Release canvas memory
       canvas.width = 0;
       canvas.height = 0;
 
-      const pngImage = await newPdfDoc.embedPng(pngImageBytes);
-      newPage.drawImage(pngImage, {
+      if (caps.ocr.yieldMs > 0) {
+        await new Promise((r) => setTimeout(r, caps.ocr.yieldMs));
+      }
+
+      const embeddedImage = useJpeg
+        ? await newPdfDoc.embedJpg(imageBytes)
+        : await newPdfDoc.embedPng(imageBytes);
+      newPage.drawImage(embeddedImage, {
         x: 0,
         y: 0,
         width: viewport.width,

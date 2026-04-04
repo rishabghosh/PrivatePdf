@@ -1,4 +1,5 @@
 import { isWasmAvailable, getWasmBaseUrl } from '../config/wasm-cdn-config.js';
+import { getDeviceCapabilities } from './device-capability.js';
 
 export enum PreloadStatus {
   IDLE = 'idle',
@@ -95,6 +96,12 @@ function scheduleIdleTask(task: () => Promise<void>): void {
 
 export function startBackgroundPreload(): void {
   console.log('[Preloader] Scheduling background WASM preloads...');
+
+  const caps = getDeviceCapabilities();
+  if (!caps.wasm.preloadOnIdle) {
+    console.log('[Preloader] Skipping WASM preloads on low/medium tier device');
+    return;
+  }
 
   const libreOfficePages = [
     'word-to-pdf',

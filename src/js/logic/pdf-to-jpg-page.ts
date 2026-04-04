@@ -11,6 +11,7 @@ import JSZip from 'jszip';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFPageProxy } from 'pdfjs-dist';
 import { t } from '../i18n/i18n';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -121,11 +122,15 @@ async function convert() {
       downloadFile(blob, getCleanPdfFilename(files[0].name) + '.jpg');
     } else {
       const zip = new JSZip();
+      const caps = getDeviceCapabilities();
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const blob = await renderPage(page, quality);
         if (blob) {
           zip.file(`page_${i}.jpg`, blob);
+        }
+        if (caps.tier === 'low') {
+          await new Promise(r => setTimeout(r, 0));
         }
       }
 
@@ -153,7 +158,8 @@ async function renderPage(
   page: PDFPageProxy,
   quality: number
 ): Promise<Blob | null> {
-  const viewport = page.getViewport({ scale: 2.0 });
+  const caps = getDeviceCapabilities();
+  const viewport = page.getViewport({ scale: caps.image.pdfToImageScale });
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   canvas.height = viewport.height;
@@ -168,6 +174,8 @@ async function renderPage(
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob(resolve, 'image/jpeg', quality)
   );
+  canvas.width = 0;
+  canvas.height = 0;
   return blob;
 }
 

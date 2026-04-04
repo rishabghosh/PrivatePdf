@@ -7,6 +7,7 @@ import { loadPdfWithPasswordPrompt } from '../utils/password-prompt.js';
 import * as pdfjsLib from 'pdfjs-dist';
 import Sortable from 'sortablejs';
 import { loadPdfDocument } from '../utils/load-pdf-document.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -274,9 +275,11 @@ async function renderThumbnails() {
   processBtn.classList.remove('hidden');
   advancedSettings.classList.remove('hidden');
 
+  const caps = getDeviceCapabilities();
+
   for (let i = 1; i <= organizeState.totalPages; i++) {
     const page = await organizeState.pdfJsDoc.getPage(i);
-    const viewport = page.getViewport({ scale: 1 });
+    const viewport = page.getViewport({ scale: caps.render.thumbnailScale });
 
     const canvas = document.createElement('canvas');
     canvas.width = viewport.width;
@@ -294,7 +297,14 @@ async function renderThumbnails() {
     imgContainer.className = 'relative';
 
     const img = document.createElement('img');
-    img.src = canvas.toDataURL();
+    const blobUrl = await new Promise<string>((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(URL.createObjectURL(blob!));
+      });
+    });
+    img.src = blobUrl;
+    canvas.width = 0;
+    canvas.height = 0;
     img.className = 'rounded-md shadow-md max-w-full h-auto';
     imgContainer.appendChild(img);
 

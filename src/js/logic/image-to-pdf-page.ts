@@ -8,6 +8,7 @@ import {
   getSelectedQuality,
   compressImageFile,
 } from '../utils/image-compress.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 const SUPPORTED_FORMATS =
   '.jpg,.jpeg,.png,.bmp,.gif,.tiff,.tif,.pnm,.pgm,.pbm,.ppm,.pam,.jxr,.jpx,.jp2,.psd,.svg,.heic,.heif,.webp';
@@ -227,6 +228,8 @@ async function preprocessFile(file: File): Promise<File> {
           ctx.drawImage(img, 0, 0);
           canvas.toBlob((blob) => {
             URL.revokeObjectURL(url);
+            canvas.width = 0;
+            canvas.height = 0;
             if (blob) {
               resolve(
                 new File([blob], file.name.replace(/\.webp$/i, '.png'), {
@@ -267,6 +270,8 @@ async function convertToPdf() {
 
   try {
     const quality = getSelectedQuality();
+    const { tier } = getDeviceCapabilities();
+    const isLowTier = tier === 'low';
     const processedFiles: File[] = [];
     for (const file of files) {
       try {
@@ -276,6 +281,9 @@ async function convertToPdf() {
       } catch (error: unknown) {
         console.warn(error);
         throw error;
+      }
+      if (isLowTier) {
+        await new Promise((r) => setTimeout(r, 0));
       }
     }
 

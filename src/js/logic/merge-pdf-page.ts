@@ -12,6 +12,7 @@ import {
   showWasmRequiredDialog,
   WasmProvider,
 } from '../utils/wasm-provider.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 import { createIcons, icons } from 'lucide';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -48,9 +49,16 @@ const mergeState: MergeState = {
   mergeSuccess: false,
 };
 
-const mergeWorker = new Worker(
-  import.meta.env.BASE_URL + 'workers/merge.worker.js'
-);
+let mergeWorker: Worker | null = null;
+
+function getMergeWorker(): Worker {
+  if (!mergeWorker) {
+    mergeWorker = new Worker(
+      import.meta.env.BASE_URL + 'workers/merge.worker.js'
+    );
+  }
+  return mergeWorker;
+}
 
 function initializeFileListSortable() {
   const fileList = document.getElementById('file-list');
@@ -193,14 +201,15 @@ async function renderPageMergeThumbnails() {
       };
 
       // Render pages progressively with lazy loading
+      const caps = getDeviceCapabilities();
       await renderPagesProgressively(
         pdfjsDoc,
         container,
         createWrapperWithFileName,
         {
-          batchSize: 8,
+          batchSize: caps.render.batchSize,
           useLazyLoading: true,
-          lazyLoadMargin: '300px',
+          lazyLoadMargin: caps.render.lazyLoadMargin,
           onProgress: () => {
             currentPageNumber++;
             showLoader(`Rendering page previews...`);
@@ -392,12 +401,13 @@ export async function merge() {
       cpdfUrl: WasmProvider.getUrl('cpdf')! + 'coherentpdf.browser.min.js',
     };
 
-    mergeWorker.postMessage(
+    const worker = getMergeWorker();
+    worker.postMessage(
       message,
       filesToMerge.map((f) => f.data)
     );
 
-    mergeWorker.onmessage = (e: MessageEvent<MergeResponse>) => {
+    worker.onmessage = (e: MessageEvent<MergeResponse>) => {
       hideLoader();
       if (e.data.status === 'success') {
         const blob = new Blob([e.data.pdfBytes], { type: 'application/pdf' });
@@ -417,7 +427,7 @@ export async function merge() {
       }
     };
 
-    mergeWorker.onerror = (e) => {
+    worker.onerror = (e) => {
       hideLoader();
       console.error('Worker error:', e);
       showAlert('Error', 'An unexpected error occurred in the merge worker.');

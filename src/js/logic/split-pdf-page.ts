@@ -15,6 +15,7 @@ import { showWasmRequiredDialog } from '../utils/wasm-provider.js';
 import JSZip from 'jszip';
 import { PDFDocument as PDFLibDocument } from 'pdf-lib';
 import { loadPdfDocument } from '../utils/load-pdf-document.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -203,10 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       // Render pages progressively with lazy loading
+      const caps = getDeviceCapabilities();
       await renderPagesProgressively(pdf, container, createWrapper, {
-        batchSize: 8,
+        batchSize: caps.render.batchSize,
         useLazyLoading: true,
-        lazyLoadMargin: '400px',
+        lazyLoadMargin: caps.render.lazyLoadMargin,
         onProgress: (current, total) => {
           showLoader(`Rendering page previews: ${current}/${total}`);
         },

@@ -5,6 +5,7 @@ import {
   initializeQpdf,
   readFileAsArrayBuffer,
 } from '../utils/helpers.js';
+import { getDeviceCapabilities } from '../utils/device-capability.js';
 import { icons, createIcons } from 'lucide';
 import { EncryptPdfState, QpdfInstanceExtended } from '@/types';
 
@@ -97,6 +98,12 @@ async function encryptPdf() {
     return;
   }
 
+  const caps = getDeviceCapabilities();
+  if (caps.tier === 'low' && pageState.file.size > 30 * 1024 * 1024) {
+    showAlert('Large File Warning', 'This PDF is over 30MB. Encryption may be slow or fail on your device. Consider using a smaller file.');
+    return;
+  }
+
   const userPassword =
     (document.getElementById('user-password-input') as HTMLInputElement)
       ?.value || '';
@@ -121,7 +128,7 @@ async function encryptPdf() {
 
   try {
     if (loaderModal) loaderModal.classList.remove('hidden');
-    if (loaderText) loaderText.textContent = 'Initializing encryption...';
+    if (loaderText) loaderText.textContent = 'Loading encryption engine...';
 
     qpdf = await initializeQpdf();
 

@@ -679,6 +679,10 @@ export default defineConfig(() => {
               if (id.includes('xlsx')) return 'vendor-xlsx';
               if (id.includes('markdown-it')) return 'vendor-markdown';
               if (id.includes('rete')) return 'vendor-rete';
+              if (id.includes('jszip')) return 'vendor-jszip';
+              if (id.includes('heic2any')) return 'vendor-heic2any';
+              if (id.includes('@pdf-lib/fontkit') || id.includes('fontkit')) return 'vendor-fontkit';
+              if (id.includes('pdfkit')) return 'vendor-pdfkit';
             }
           },
         },

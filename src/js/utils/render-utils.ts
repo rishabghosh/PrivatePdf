@@ -1,4 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import { getDeviceCapabilities } from './device-capability.js';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -269,10 +270,11 @@ export async function renderPagesProgressively(
   ) => HTMLElement,
   config: RenderConfig = {}
 ): Promise<void> {
+  const caps = getDeviceCapabilities();
   const {
-    batchSize = 8,
+    batchSize = caps.render.batchSize,
     useLazyLoading = true,
-    eagerLoadBatches = 2,
+    eagerLoadBatches = caps.render.eagerLoadBatches,
     onProgress,
     onBatchComplete,
   } = config;
@@ -280,7 +282,7 @@ export async function renderPagesProgressively(
   const totalPages = pdfjsDoc.numPages;
 
   const initialRenderCount = useLazyLoading
-    ? Math.min(20, totalPages)
+    ? Math.min(caps.render.initialPageCount, totalPages)
     : totalPages;
 
   const placeholders: HTMLElement[] = [];
@@ -298,7 +300,7 @@ export async function renderPagesProgressively(
       pageNumber: i,
       pdfjsDoc,
       container,
-      scale: useLazyLoading ? 0.5 : 1,
+      scale: useLazyLoading ? caps.render.thumbnailScale : 1,
       createWrapper,
       placeholderElement: placeholders[i - 1],
     });
