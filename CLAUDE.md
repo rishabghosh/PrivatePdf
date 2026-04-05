@@ -90,6 +90,10 @@ Copy `.env.example` to `.env.production`. Key variables:
 - `BASE_URL` — Subdirectory deployment path
 - `DISABLE_TOOLS` — Comma-separated tool IDs to hide at build time
 
+## Skills
+
+- [js-to-wasm](skills/js-to-wasm/SKILL.md) — Convert JS processing logic to Rust WASM modules. Use when moving CPU-intensive code (pixel manipulation, data transforms, compression) into WASM.
+
 ## Deployment
 
 Primary target is Cloudflare Pages (`wrangler.jsonc` at root). Also supports Docker (Node 20 Alpine multi-stage), GitHub Pages, Netlify, and Vercel. Build outputs static files to `dist/`. The build requires `NODE_OPTIONS='--max-old-space-size=4096'` due to the large number of entry points.
