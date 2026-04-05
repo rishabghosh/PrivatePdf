@@ -92,7 +92,7 @@ Copy `.env.example` to `.env.production`. Key variables:
 
 ## Skills
 
-- [js-to-wasm](skills/js-to-wasm/SKILL.md) — Convert JS processing logic to Rust WASM modules. Use when moving CPU-intensive code (pixel manipulation, data transforms, compression) into WASM.
+- [js-to-wasm](.claude/skills/js-to-wasm/SKILL.md) — Convert JS processing logic to Rust WASM modules. Use when moving CPU-intensive code (pixel manipulation, data transforms, compression) into WASM.
 
 ## Deployment
 
