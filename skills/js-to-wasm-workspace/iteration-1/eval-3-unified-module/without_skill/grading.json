@@ -1,0 +1,76 @@
+{
+  "eval_id": 3,
+  "eval_name": "unified-image-effects-module",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Creates a SINGLE Rust crate (not multiple) that exports all image effect functions",
+      "passed": true,
+      "evidence": "There is exactly one Cargo.toml with name='bentopdf-image-effects'. The single lib.rs file exports all pixel effect functions via #[wasm_bindgen]: apply_greyscale, apply_invert_colors, apply_scanner_pixels, apply_color_adjustments, plus two bonus functions (apply_brightness_contrast, apply_sepia). No additional crates exist."
+    },
+    {
+      "text": "Exports at minimum: apply_greyscale, apply_invert, apply_color_adjustments, apply_scanner_processing",
+      "passed": true,
+      "evidence": "lib.rs exports via #[wasm_bindgen]: (1) apply_greyscale(&mut [u8]), (2) apply_invert_colors(&mut [u8]), (3) apply_color_adjustments(&mut [u8], brightness, contrast, saturation, hue_shift, temperature, tint, gamma, sepia), (4) apply_scanner_pixels(&mut [u8], grayscale, brightness, contrast, yellowish, scaled_noise, noise_seed). Additionally exports apply_brightness_contrast and apply_sepia as convenience subsets. Function names differ slightly from assertion but semantic coverage is complete."
+    },
+    {
+      "text": "One TypeScript loader and one WasmProvider entry for the unified module",
+      "passed": false,
+      "evidence": "image-effects-wasm-loader.ts provides a single loader with cached/loadPromise deduplication pattern. However, it does NOT use WasmProvider at all. Instead, it uses a custom getWasmBaseUrl() that reads VITE_WASM_IMAGE_EFFECTS_URL directly from import.meta.env, bypassing the project's WasmProvider system entirely. There is no WasmProvider entry added. The assertion requires both 'one TypeScript loader' (satisfied) AND 'one WasmProvider entry' (not satisfied)."
+    },
+    {
+      "text": "Rust code is organized into internal modules (e.g., mod greyscale, mod color) but compiled as single crate",
+      "passed": false,
+      "evidence": "All Rust code is in a single lib.rs file without any 'mod' declarations. Functions are grouped by comment separators ('// Exported WASM functions', '// Tests') but there is no internal module structure like 'mod greyscale' or 'mod color'. The code is a flat file compiled as a single crate."
+    },
+    {
+      "text": "Handles the multi-hundred-page use case \u2014 discusses or implements batch processing / streaming",
+      "passed": false,
+      "evidence": "The outputs do not discuss or implement batch processing or streaming. All WASM functions operate on a single buffer at a time (&mut [u8]). The image-effects-integrated.ts processes pages one at a time in a standard for-loop. There is no mention of the multi-hundred-page use case, memory management for bulk processing, or streaming approaches."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 3,
+    "total": 5,
+    "pass_rate": 0.4
+  },
+  "claims": [
+    {
+      "claim": "The WASM module includes convenience functions beyond what was requested",
+      "type": "factual",
+      "verified": true,
+      "evidence": "lib.rs exports apply_brightness_contrast and apply_sepia as standalone functions, which are useful subsets of the full pipeline not specifically requested"
+    },
+    {
+      "claim": "All WASM functions operate in-place via &mut [u8]",
+      "type": "process",
+      "verified": true,
+      "evidence": "All exported functions take &mut [u8] and modify the buffer in place, unlike the with_skill version which returns new Vec<u8>. This is more memory-efficient for the multi-page use case but also means the caller cannot keep the original buffer."
+    },
+    {
+      "claim": "The integration file is a full drop-in replacement for image-effects.ts",
+      "type": "quality",
+      "verified": true,
+      "evidence": "image-effects-integrated.ts exports all the same public functions as the original (applyGreyscale, applyInvertColors, applyScannerEffect, applyColorAdjustments, rgbToHsl, hslToRgb) with identical signatures. Call-sites need zero changes."
+    },
+    {
+      "claim": "The module eagerly preloads WASM at import time",
+      "type": "process",
+      "verified": true,
+      "evidence": "image-effects-integrated.ts calls loadImageEffectsWasm() at module level (line 29-38) with .then()/.catch(), so the WASM fetch begins as soon as the module is imported. This is a different strategy from the with_skill version which defers loading."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "One TypeScript loader and one WasmProvider entry for the unified module",
+        "reason": "The without_skill run created a working loader that bypasses WasmProvider. This is a reasonable alternative architecture. The assertion penalizes the run for not following the project's specific WasmProvider pattern, which is a fair measure of integration quality but not of functional correctness."
+      },
+      {
+        "reason": "No assertion checks whether the integrated file preserves the original function signatures for backward compatibility. The without_skill run's image-effects-integrated.ts is notable for being a true drop-in replacement, which is an important outcome that no assertion measures."
+      }
+    ],
+    "overall": "The without_skill run fails on WasmProvider integration and Rust module structure. The WasmProvider miss is a genuine integration gap \u2014 bypassing the project's established WASM management system means the settings page won't show this module. The Rust module structure and batch processing misses are shared with the with_skill run."
+  }
+}

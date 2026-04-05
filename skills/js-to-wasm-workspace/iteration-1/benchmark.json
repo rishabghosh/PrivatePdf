@@ -1,0 +1,99 @@
+{
+  "metadata": {
+    "skill_name": "js-to-wasm",
+    "skill_path": "/Users/rishab.ghosh/projects/privatepdf/skills/js-to-wasm",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-04-05T00:00:00Z",
+    "evals_run": ["color-adjustments-to-wasm", "scanner-effect-pixel-kernel", "unified-image-effects-module"],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "color-adjustments-to-wasm",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 6,
+      "total": 6,
+      "time_seconds": 196.2,
+      "tokens": 59906
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "color-adjustments-to-wasm",
+      "configuration": "without_skill",
+      "pass_rate": 0.83,
+      "passed": 5,
+      "total": 6,
+      "time_seconds": 149.0,
+      "tokens": 35250
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "scanner-effect-pixel-kernel",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 5,
+      "total": 5,
+      "time_seconds": 269.9,
+      "tokens": 64657
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "scanner-effect-pixel-kernel",
+      "configuration": "without_skill",
+      "pass_rate": 1.0,
+      "passed": 5,
+      "total": 5,
+      "time_seconds": 181.4,
+      "tokens": 41245
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "unified-image-effects-module",
+      "configuration": "with_skill",
+      "pass_rate": 0.6,
+      "passed": 3,
+      "total": 5,
+      "time_seconds": 250.4,
+      "tokens": 62402
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "unified-image-effects-module",
+      "configuration": "without_skill",
+      "pass_rate": 0.4,
+      "passed": 2,
+      "total": 5,
+      "time_seconds": 178.5,
+      "tokens": 38246
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 0.87,
+      "stddev_pass_rate": 0.19,
+      "mean_time_seconds": 238.8,
+      "mean_tokens": 62322
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.74,
+      "stddev_pass_rate": 0.25,
+      "mean_time_seconds": 169.6,
+      "mean_tokens": 38247
+    },
+    "delta": {
+      "pass_rate": "+0.13",
+      "time_seconds": "+69.2",
+      "tokens": "+24075"
+    }
+  },
+  "notes": [
+    "Skill provides strongest value on eval 1 (serde settings pattern) and eval 3 (WasmProvider integration).",
+    "Eval 2 (boundary identification) shows no pass-rate delta — both configurations correctly identified the WASM/JS split.",
+    "Both configurations missed Rust internal module organization (mod greyscale, mod color) and batch/streaming discussion in eval 3.",
+    "With-skill runs are ~40% slower and use ~63% more tokens, likely due to reading skill + reference files.",
+    "The without_skill baseline for eval 2 used raw WebAssembly.instantiate instead of WasmProvider — functional but inconsistent with project patterns."
+  ]
+}

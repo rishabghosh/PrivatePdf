@@ -1,0 +1,72 @@
+{
+  "eval_id": 2,
+  "eval_name": "scanner-effect-pixel-kernel",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Correctly identifies the WASM/JS boundary \u2014 pixel processing in Rust, Canvas blur/border/rotation stays in JS",
+      "passed": true,
+      "evidence": "scanner_kernel.rs only handles pixel-level operations (grayscale, brightness, contrast, yellowish, noise). The image-effects.ts file retains all Canvas API operations: blur (line 219: ctx.filter='blur(...)'), border (lines 261-286: createLinearGradient), and rotation (lines 288-308: ctx.rotate/translate). The comment at the top of scanner_kernel.rs states: 'Blur and border/rotation remain in JS (Canvas API).'"
+    },
+    {
+      "text": "Rust function handles grayscale, brightness, contrast, yellowish tint, and noise",
+      "passed": true,
+      "evidence": "scanner_kernel.rs apply_scanner_kernel() implements all 5: (1) grayscale with luminance formula 0.299*r+0.587*g+0.114*b, (2) brightness as additive offset, (3) contrast via 259*(c+255)/(255*(259-c)) formula, (4) yellowish with r+=20*intensity, g+=12*intensity, b-=15*intensity, (5) noise via Xorshift64 PRNG."
+    },
+    {
+      "text": "Replaces Math.random noise with a seedable PRNG (deterministic for testing)",
+      "passed": true,
+      "evidence": "scanner_kernel.rs implements Xorshift64 struct with new(seed) constructor and next_f32() method returning values in [-0.5, 0.5). The apply_scanner_kernel function takes a noise_seed parameter. Tests verify determinism: test_noise_deterministic passes same seed=42 twice and asserts data1==data2. test_noise_different_seeds verifies different seeds produce different output."
+    },
+    {
+      "text": "TypeScript integration passes pixel buffer to WASM and applies Canvas operations after",
+      "passed": true,
+      "evidence": "image-effects.ts applyScannerEffect() (line 199-309) first applies blur via Canvas API, then at line 240 calls ensureWasmKernel() and if available, calls kernel.applyKernel(data, ...) on the pixel buffer. After the kernel (WASM or JS), border and rotation are applied via Canvas API. The scanner-kernel-loader.ts applyKernel() method copies data into WASM memory, calls the kernel, and copies results back."
+    },
+    {
+      "text": "Does NOT move Canvas-dependent code (blur, border gradient, rotation) into Rust",
+      "passed": true,
+      "evidence": "scanner_kernel.rs contains only pixel manipulation functions with zero Canvas/DOM references. The apply_scanner_kernel function operates on &mut [u8] data with primitive numeric parameters. Blur, border, and rotation are entirely in image-effects.ts using Canvas 2D context methods."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "claims": [
+    {
+      "claim": "The WASM function mutates data in-place via &mut [u8]",
+      "type": "process",
+      "verified": true,
+      "evidence": "scanner_kernel.rs apply_scanner_kernel takes 'data: &mut [u8]' and writes back directly. The loader copies data into WASM memory and copies results back."
+    },
+    {
+      "claim": "The loader uses raw WebAssembly.instantiateStreaming rather than wasm-pack's generated glue",
+      "type": "process",
+      "verified": true,
+      "evidence": "scanner-kernel-loader.ts manually calls WebAssembly.instantiateStreaming with a custom importObject, manages memory allocation via __wbindgen_malloc/__wbindgen_free. This is a lower-level approach than the with_skill version which uses wasm-pack's ES module glue."
+    },
+    {
+      "claim": "A synchronous wrapper is provided for real-time preview",
+      "type": "process",
+      "verified": true,
+      "evidence": "image-effects.ts exports applyScannerEffectSync() which uses the cached WASM kernel if already loaded, or falls back to JS, without async/await. Also exports preloadScannerKernel() for page init."
+    },
+    {
+      "claim": "Uses Xorshift64 instead of Xorshift32",
+      "type": "factual",
+      "verified": true,
+      "evidence": "scanner_kernel.rs uses a u64 state field and xorshift operations on u64, then maps to f32 via (x as u32 as f32 / u32::MAX as f32). The seed parameter is u64. This differs from the with_skill version which uses u32."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks whether a WasmProvider update is provided. The without_skill run does not include a wasm-provider patch (unlike the with_skill run which has wasm-provider.ts.patch), instead using a custom loader that directly fetches from a hardcoded path. This is a notable architectural difference that goes ungraded."
+      }
+    ],
+    "overall": "Both with_skill and without_skill pass all assertions. The without_skill run took a more manual approach (raw WebAssembly.instantiate, manual memory management) rather than using WasmProvider, which is a valid but less integrated approach for this codebase."
+  }
+}

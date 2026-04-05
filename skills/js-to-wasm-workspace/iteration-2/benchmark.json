@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "skill_name": "js-to-wasm",
+    "skill_path": "/Users/rishab.ghosh/projects/privatepdf/skills/js-to-wasm",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-04-05T00:30:00Z",
+    "evals_run": ["unified-image-effects-module"],
+    "runs_per_configuration": 1,
+    "iteration": 2,
+    "focus": "Re-run of eval 3 after adding module organization and batch processing guidance"
+  },
+  "runs": [
+    {
+      "eval_id": 3,
+      "eval_name": "unified-image-effects-module",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 5,
+      "total": 5,
+      "time_seconds": 259.7,
+      "tokens": 57269
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "unified-image-effects-module",
+      "configuration": "without_skill",
+      "pass_rate": 0.6,
+      "passed": 3,
+      "total": 5,
+      "time_seconds": 279.9,
+      "tokens": 62198
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 1.0,
+      "mean_time_seconds": 259.7,
+      "mean_tokens": 57269
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.6,
+      "mean_time_seconds": 279.9,
+      "mean_tokens": 62198
+    },
+    "delta": {
+      "pass_rate": "+0.40",
+      "time_seconds": "-20.2",
+      "tokens": "-4929"
+    }
+  },
+  "comparison_with_iteration_1": {
+    "eval_3_with_skill": {
+      "iteration_1": "60% (3/5)",
+      "iteration_2": "100% (5/5)",
+      "improvement": "+40%"
+    },
+    "eval_3_without_skill": {
+      "iteration_1": "40% (2/5)",
+      "iteration_2": "60% (3/5)",
+      "improvement": "+20% (baseline naturally improved with different run)"
+    }
+  },
+  "notes": [
+    "Iteration 2 focused on eval 3 (unified module) which was the weakest in iteration 1.",
+    "With-skill went from 60% to 100% — the added module organization and batch processing guidance directly addressed both failures.",
+    "Without-skill went from 40% to 60% — it now handles in-place mutation but still puts everything in one file and bypasses WasmProvider.",
+    "The skill now provides a +40% pass rate advantage on this eval, up from +20% in iteration 1.",
+    "Notably, the with-skill run was FASTER and used FEWER tokens than without-skill this time."
+  ]
+}

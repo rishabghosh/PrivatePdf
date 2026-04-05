@@ -1,0 +1,25 @@
+[package]
+name = "bentopdf-scanner-effect-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "WASM module for scanner effect pixel processing in BentoPDF"
+license = "AGPL-3.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+# cdylib = WASM output, rlib = native tests
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[profile.release]
+opt-level = "z"       # Optimize for size (important for CDN delivery)
+lto = true            # Link-time optimization
+strip = true          # Strip debug symbols
+codegen-units = 1     # Single codegen unit for better optimization

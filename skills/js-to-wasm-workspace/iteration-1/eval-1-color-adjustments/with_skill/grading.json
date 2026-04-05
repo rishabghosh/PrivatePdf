@@ -1,0 +1,72 @@
+{
+  "eval_id": 1,
+  "eval_name": "color-adjustments-to-wasm",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Creates a Rust crate with Cargo.toml using wasm-bindgen and serde dependencies",
+      "passed": true,
+      "evidence": "Cargo.toml exists with name='bentopdf-image-effects-wasm', edition 2021, crate-type=['cdylib','rlib']. Dependencies include wasm-bindgen='0.2', js-sys='0.3', serde={version='1', features=['derive']}, and serde-wasm-bindgen='0.6'. Release profile has opt-level='z', lto=true, strip=true, codegen-units=1."
+    },
+    {
+      "text": "Rust lib.rs implements all 8 color operations: brightness, contrast, saturation, hue shift, temperature, tint, gamma, sepia",
+      "passed": true,
+      "evidence": "lib.rs contains a single apply_color_adjustments function that processes all 8 operations in order: (1) brightness via brightness_adj=brightness*2.55, (2) contrast via factor formula, (3) HSL saturation+hue shift via rgb_to_hsl/hsl_to_rgb roundtrip, (4) temperature via r+=30*factor/b-=30*factor, (5) tint via g+=30*factor, (6) gamma via powf(1/gamma), (7) sepia via standard sepia matrix with interpolation. The ColorSettings struct has all 8 fields: brightness, contrast, saturation, hue_shift, temperature, tint, gamma, sepia."
+    },
+    {
+      "text": "Creates a TypeScript loader following cached-promise deduplication pattern (cachedModule + loadPromise)",
+      "passed": true,
+      "evidence": "image-effects-wasm-loader.ts declares 'let cachedModule: ImageEffectsWasmModule | null = null' and 'let loadPromise: Promise<ImageEffectsWasmModule> | null = null'. The loadImageEffectsWasm() function checks cachedModule first, then loadPromise, then creates a new promise that loads from CDN via WasmProvider. Error path resets loadPromise=null for retry. Includes clearImageEffectsWasmCache() and isImageEffectsWasmAvailable() helpers."
+    },
+    {
+      "text": "Updates WasmProvider with new package type and CDN default",
+      "passed": true,
+      "evidence": "wasm-provider-updated.ts adds 'image-effects' to the WasmPackage union type, WasmProviderConfig interface, CDN_DEFAULTS ('https://cdn.jsdelivr.net/npm/@bentopdf/image-effects-wasm@0.1.0/'), ENV_DEFAULTS (with VITE_WASM_IMAGE_EFFECTS_URL), testFiles, display names, and feature lists. All entries are clearly marked with '// NEW' comments."
+    },
+    {
+      "text": "Preserves JS fallback \u2014 original image-effects.ts functions remain callable",
+      "passed": true,
+      "evidence": "integration-example.ts demonstrates WASM-first with JS fallback: processColorAdjustments() tries WASM via loadImageEffectsWasm(), catches errors with 'console.warn('[WASM] Color adjustment failed, falling back to JS:', e)', and falls through to call applyColorAdjustmentsJS() using the original JS function imported from '../utils/image-effects.js'. The original functions are never removed or modified."
+    },
+    {
+      "text": "Includes Rust unit tests for numerical correctness",
+      "passed": true,
+      "evidence": "lib.rs contains a comprehensive #[cfg(test)] mod tests with 13 test functions: test_clamp_u8, test_rgb_hsl_roundtrip (3 variants for general/pure_red/grey), test_brightness_single_pixel (verifies 100+50*2.55=228), test_negative_brightness (clamp to 0), test_contrast_increase (verifies formula), test_gamma_correction (verifies powf), test_sepia_full (verifies sepia matrix), test_temperature_warm (verifies r+=30/b-=30), test_tint (verifies g+=30), test_no_adjustments_passthrough, test_alpha_preserved, test_multiple_pixels. All tests verify numerical correctness against expected values."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  },
+  "claims": [
+    {
+      "claim": "The WASM function accepts settings via serde-wasm-bindgen deserialization of a JsValue",
+      "type": "process",
+      "verified": true,
+      "evidence": "lib.rs uses #[derive(Deserialize)] with serde_wasm_bindgen::from_value(settings_js) to parse the JsValue into ColorSettings struct with camelCase field rename"
+    },
+    {
+      "claim": "The processing matches the original JS implementation",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The Rust code follows the same operation order and formulas as described (brightness*2.55, contrast formula 259*(c+255)/(255*(259-c)), HSL roundtrip, temperature/tint/gamma/sepia). Unit tests verify numerical correctness for each operation."
+    },
+    {
+      "claim": "Device-adaptive preloading is implemented",
+      "type": "process",
+      "verified": true,
+      "evidence": "integration-example.ts includes preloadImageEffectsWasm() that checks device capabilities via getDeviceCapabilities() and uses requestIdleCallback for high-tier devices"
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Preserves JS fallback \u2014 original image-effects.ts functions remain callable",
+        "reason": "This assertion could be satisfied by simply importing the original file without actually wiring up a fallback path. A stronger assertion would check that the fallback is actually invoked when WASM is unavailable (e.g., the integration code has a try/catch that calls the JS version)."
+      }
+    ],
+    "overall": "Assertions cover the key deliverables well. The test_check assertion is strong since it verifies numerical correctness, not just test existence."
+  }
+}

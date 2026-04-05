@@ -1,0 +1,71 @@
+{
+  "eval_id": 3,
+  "eval_name": "unified-image-effects-module",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Creates a SINGLE Rust crate (not multiple) that exports all image effect functions",
+      "passed": true,
+      "evidence": "There is exactly one Cargo.toml with name='bentopdf-image-effects-wasm'. The single lib.rs file exports all functions: apply_greyscale, apply_invert_colors, apply_color_adjustments, and apply_scanner_pixel_kernel, all marked with #[wasm_bindgen]. No additional crates exist in the outputs."
+    },
+    {
+      "text": "Exports at minimum: apply_greyscale, apply_invert, apply_color_adjustments, apply_scanner_processing",
+      "passed": true,
+      "evidence": "lib.rs exports via #[wasm_bindgen]: (1) apply_greyscale(pixels: &[u8]) -> Vec<u8>, (2) apply_invert_colors(pixels: &[u8]) -> Vec<u8>, (3) apply_color_adjustments(pixels: &[u8], settings_js: JsValue) -> Result<Vec<u8>, JsError>, (4) apply_scanner_pixel_kernel(pixels: &[u8], settings_js: JsValue) -> Result<Vec<u8>, JsError>. The function names differ slightly from the assertion (apply_invert_colors vs apply_invert, apply_scanner_pixel_kernel vs apply_scanner_processing) but the semantic requirements are fully met."
+    },
+    {
+      "text": "One TypeScript loader and one WasmProvider entry for the unified module",
+      "passed": true,
+      "evidence": "image-effects-wasm-loader.ts is the single loader, exporting loadImageEffectsWasm() which returns ImageEffectsWasmModule with all 4 functions. The integration.ts documents a single WasmProvider entry: 'image-effects' added to WasmPackage union type, CDN_DEFAULTS, ENV_DEFAULTS, etc. There is one cachedModule and one loadPromise for the entire module."
+    },
+    {
+      "text": "Rust code is organized into internal modules (e.g., mod greyscale, mod color) but compiled as single crate",
+      "passed": false,
+      "evidence": "The Rust code is all in a single lib.rs file without any internal module organization (no 'mod greyscale', 'mod color', etc.). Functions are separated by comment headers ('// --- Greyscale ---', '// --- Invert Colors ---', etc.) but this is not Rust module organization. The code compiles as a single crate but does not use 'mod' declarations."
+    },
+    {
+      "text": "Handles the multi-hundred-page use case \u2014 discusses or implements batch processing / streaming",
+      "passed": false,
+      "evidence": "The outputs do not discuss or implement batch processing or streaming for multi-hundred-page PDFs. The Rust functions process one pixel buffer at a time. The integration.ts shows per-page processing ('await applyGreyscaleWithFallback(imageData)' in a loop) but does not address the multi-page overhead concern (e.g., no batch function that processes multiple buffers, no streaming interface, no discussion of memory management for hundreds of pages). The device-adaptive loading discussion in integration.ts (section 8) mentions low-tier device considerations but not the multi-page batch case."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  },
+  "claims": [
+    {
+      "claim": "The loader exports all 4 WASM functions through a single typed interface",
+      "type": "process",
+      "verified": true,
+      "evidence": "ImageEffectsWasmModule interface in the loader declares apply_greyscale, apply_invert_colors, apply_color_adjustments, and apply_scanner_pixel_kernel"
+    },
+    {
+      "claim": "Comprehensive Rust unit tests cover all 4 exported functions",
+      "type": "quality",
+      "verified": true,
+      "evidence": "lib.rs #[cfg(test)] contains 17 tests covering clamp_u8, rgb_hsl_roundtrip, greyscale (single/white/black/multiple), invert (single/double_invert/extremes), brightness, contrast, sepia, scanner grayscale/yellowish, and xorshift determinism/range"
+    },
+    {
+      "claim": "Vitest tests verify JS reference implementations",
+      "type": "quality",
+      "verified": true,
+      "evidence": "image-effects-wasm.test.ts has 14 tests covering greyscale JS reference, invert JS reference, HSL roundtrip parity. WASM vs JS parity tests are stubbed/commented out (require WASM module to be loaded in test environment)"
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Rust code is organized into internal modules (e.g., mod greyscale, mod color) but compiled as single crate",
+        "reason": "This assertion is quite specific about Rust module organization. A flat file with good section comments is a reasonable organization for a module of this size (~600 lines). The assertion conflates code organization quality with a specific Rust idiom."
+      },
+      {
+        "assertion": "Handles the multi-hundred-page use case \u2014 discusses or implements batch processing / streaming",
+        "reason": "This assertion is vague ('discusses or implements') which makes grading it fairly subjective. A more testable assertion would be: 'Exports a batch function that processes multiple pixel buffers in a single WASM call' or 'Documents memory management strategy for processing hundreds of pages'."
+      }
+    ],
+    "overall": "The two failed assertions represent reasonable gaps: no internal Rust module structure and no batch/streaming discussion. The core deliverable (unified crate with 4 exports, single loader, single WasmProvider entry) is solid."
+  }
+}

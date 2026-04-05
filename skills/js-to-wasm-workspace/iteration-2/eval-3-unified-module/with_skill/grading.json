@@ -1,0 +1,33 @@
+{
+  "eval_id": 3,
+  "eval_name": "unified-image-effects-module",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Creates a SINGLE Rust crate (not multiple) that exports all image effect functions",
+      "passed": true,
+      "evidence": "Cargo.toml defines a single crate named 'bentopdf-image-effects-wasm' with crate-type = ['cdylib', 'rlib']. All exported functions (apply_greyscale, apply_invert_colors, apply_color_adjustments, apply_scanner_kernel) are exposed via #[wasm_bindgen] in a single src/lib.rs file that delegates to internal modules. There is only one Cargo.toml, one lib.rs entry point, and one build.sh producing one .wasm binary."
+    },
+    {
+      "text": "Exports at minimum: apply_greyscale, apply_invert, apply_color_adjustments, apply_scanner_processing",
+      "passed": true,
+      "evidence": "src/lib.rs exports four #[wasm_bindgen] functions: apply_greyscale (line 26), apply_invert_colors (line 34), apply_color_adjustments (line 57), and apply_scanner_kernel (line 86). These cover all four required exports (apply_greyscale, apply_invert via apply_invert_colors, apply_color_adjustments, apply_scanner_processing via apply_scanner_kernel). The TypeScript loader interface (image-effects-wasm-loader.ts lines 17-37) confirms all four exports."
+    },
+    {
+      "text": "One TypeScript loader and one WasmProvider entry for the unified module",
+      "passed": true,
+      "evidence": "One TypeScript loader: image-effects-wasm-loader.ts provides loadImageEffectsWasm(), isImageEffectsWasmAvailable(), and clearImageEffectsWasmCache(). One WasmProvider entry: wasm-provider-additions.ts shows a single 'image-effects' entry added to the WasmPackage type union (line 12), CDN_DEFAULTS, ENV_DEFAULTS, validateUrl testFiles, getAllProviders, getPackageDisplayName, and getPackageFeatures sections."
+    },
+    {
+      "text": "Rust code is organized into internal modules (e.g., mod greyscale, mod color) — not all in one file",
+      "passed": true,
+      "evidence": "src/lib.rs declares 5 internal modules (lines 13-17): 'mod color; mod common; mod greyscale; mod invert; mod scanner;'. Each has a dedicated .rs file: src/greyscale.rs (77 lines), src/invert.rs (73 lines), src/color.rs (261 lines), src/common.rs (131 lines with clamp_u8, rgb_to_hsl, hsl_to_rgb), and src/scanner.rs (195 lines). The lib.rs itself is only 97 lines serving as the wasm_bindgen boundary layer."
+    },
+    {
+      "text": "Addresses multi-hundred-page use case — discusses or implements batch processing, buffer reuse, or in-place mutation",
+      "passed": true,
+      "evidence": "All four exported functions use in-place mutation via &mut [u8] parameters (lib.rs lines 26, 34, 57, 86). The Rust code uses chunks_exact_mut(4) for efficient iteration (greyscale.rs line 6, invert.rs line 5, color.rs line 54, scanner.rs line 56). Color adjustments precompute constants outside the loop (color.rs lines 26-52: contrast_factor, gamma_correction, sepia_amount, etc.) and use boolean flags (needs_brightness, needs_contrast, etc.) to skip no-op branches. The integration example (image-effects-integration-example.ts) shows device-adaptive preloading via requestIdleCallback (line 28) for the multi-page use case. The tests/integration.rs includes test_large_buffer_greyscale and test_large_buffer_invert (lines 64-88) validating large buffer processing."
+    }
+  ],
+  "overall_notes": "The with_skill run produces a well-structured, production-quality WASM module. Key strengths: (1) clean separation of concerns with 5 internal Rust modules + a thin lib.rs boundary, (2) all functions use in-place mutation (&mut [u8]) with chunks_exact_mut for efficiency, (3) comprehensive test coverage at both unit (per-module) and integration levels, (4) single TypeScript loader with WasmProvider integration, (5) device-adaptive preloading example. All 5 assertions pass."
+}

@@ -1,0 +1,18 @@
+[package]
+name = "bentopdf-image-effects"
+version = "0.1.0"
+edition = "2021"
+description = "Unified WASM image effects module for BentoPDF - greyscale, invert, brightness, contrast, sepia, gamma, hue/saturation, temperature, tint, and combined pipelines."
+license = "AGPL-3.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "z"      # Optimize for size (smaller .wasm download)
+lto = true           # Link-time optimization
+codegen-units = 1    # Better optimization at cost of compile time
+strip = true         # Strip debug symbols

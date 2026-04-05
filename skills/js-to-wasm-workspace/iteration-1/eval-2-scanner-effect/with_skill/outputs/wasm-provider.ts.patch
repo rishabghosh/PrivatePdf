@@ -1,0 +1,60 @@
+/**
+ * Patch for src/js/utils/wasm-provider.ts
+ *
+ * These are the changes needed to register the scanner-effect WASM module.
+ * Apply these changes to the existing wasm-provider.ts file.
+ */
+
+// 1. Update the WasmPackage type union (line 1):
+//
+// BEFORE:
+//   export type WasmPackage = 'pymupdf' | 'ghostscript' | 'cpdf';
+//
+// AFTER:
+//   export type WasmPackage = 'pymupdf' | 'ghostscript' | 'cpdf' | 'scanner-effect';
+
+// 2. Update the WasmProviderConfig interface (line 3-7):
+//
+// BEFORE:
+//   interface WasmProviderConfig {
+//     pymupdf?: string;
+//     ghostscript?: string;
+//     cpdf?: string;
+//   }
+//
+// AFTER:
+//   interface WasmProviderConfig {
+//     pymupdf?: string;
+//     ghostscript?: string;
+//     cpdf?: string;
+//     'scanner-effect'?: string;
+//   }
+
+// 3. Add CDN default (inside CDN_DEFAULTS, after line 14):
+//
+//   'scanner-effect': 'https://cdn.jsdelivr.net/npm/@bentopdf/scanner-effect-wasm/',
+
+// 4. Add env var default (inside ENV_DEFAULTS, after line 31):
+//
+//   'scanner-effect': envOrDefault(
+//     import.meta.env.VITE_WASM_SCANNER_EFFECT_URL,
+//     CDN_DEFAULTS['scanner-effect']
+//   ),
+
+// 5. Update getAllProviders() (line 211-216) to include:
+//
+//   'scanner-effect': this.config['scanner-effect'] || ENV_DEFAULTS['scanner-effect'],
+
+// 6. Update getPackageDisplayName() (line 233-238) to include:
+//
+//   'scanner-effect': 'Scanner Effect (Image Processing)',
+
+// 7. Update getPackageFeatures() (line 242-270) to include:
+//
+//   'scanner-effect': [
+//     'Scanner Effect (Grayscale, Brightness, Contrast, Noise, Tint)',
+//   ],
+
+// 8. Update validateUrl() testFiles record (~line 132) to include:
+//
+//   'scanner-effect': 'bentopdf_scanner_effect_wasm.js',

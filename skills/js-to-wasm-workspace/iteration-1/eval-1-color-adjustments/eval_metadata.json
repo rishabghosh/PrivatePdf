@@ -1,0 +1,31 @@
+{
+  "eval_id": 1,
+  "eval_name": "color-adjustments-to-wasm",
+  "prompt": "The applyColorAdjustments function in src/js/utils/image-effects.ts is really slow on my Chromebook — it does pixel-by-pixel brightness, contrast, HSL hue/saturation shifts, gamma correction, sepia, and temperature adjustments in a JS for-loop. Can you convert this to a Rust WASM module? I want it to follow the same pattern as PyMuPDF loading and integrate with the existing WasmProvider.",
+  "assertions": [
+    {
+      "text": "Creates a Rust crate with Cargo.toml using wasm-bindgen and serde dependencies",
+      "type": "file_check"
+    },
+    {
+      "text": "Rust lib.rs implements all 8 color operations: brightness, contrast, saturation, hue shift, temperature, tint, gamma, sepia",
+      "type": "content_check"
+    },
+    {
+      "text": "Creates a TypeScript loader following cached-promise deduplication pattern (cachedModule + loadPromise)",
+      "type": "pattern_check"
+    },
+    {
+      "text": "Updates WasmProvider with new package type and CDN default",
+      "type": "integration_check"
+    },
+    {
+      "text": "Preserves JS fallback — original image-effects.ts functions remain callable",
+      "type": "fallback_check"
+    },
+    {
+      "text": "Includes Rust unit tests for numerical correctness",
+      "type": "test_check"
+    }
+  ]
+}

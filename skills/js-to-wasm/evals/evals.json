@@ -1,0 +1,32 @@
+{
+  "skill_name": "js-to-wasm",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The applyColorAdjustments function in src/js/utils/image-effects.ts is really slow on my Chromebook — it does pixel-by-pixel brightness, contrast, HSL hue/saturation shifts, gamma correction, sepia, and temperature adjustments in a JS for-loop. Can you convert this to a Rust WASM module? I want it to follow the same pattern as PyMuPDF loading and integrate with the existing WasmProvider.",
+      "expected_output": "A Rust crate under wasm/bentopdf-image-effects-wasm/ with lib.rs implementing the full color adjustment pipeline (brightness, contrast, saturation, hue shift, temperature, tint, gamma, sepia). A TypeScript loader at src/js/utils/image-effects-wasm-loader.ts following the cached-promise pattern. WasmProvider updated with the new package. JS fallback preserved in the tool page integration.",
+      "files": [
+        "src/js/utils/image-effects.ts",
+        "src/js/utils/wasm-provider.ts",
+        "src/js/utils/pymupdf-loader.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to move the scanner effect processing to WASM. The applyScannerEffect function in image-effects.ts does grayscale conversion, brightness, contrast, yellowish tint, and random noise — all per-pixel in a JS loop. The blur and border/rotation parts use Canvas APIs so those should stay in JS. Just the pixel processing kernel needs to go to Rust.",
+      "expected_output": "A Rust function `apply_scanner_pixel_processing` that handles grayscale, brightness, contrast, yellowish tint, and noise (with a seed parameter instead of Math.random). TypeScript integration that extracts the pixel buffer, sends it to WASM for processing, then applies blur/border/rotation in JS as before. Clean boundary between WASM computation and Canvas UI.",
+      "files": [
+        "src/js/utils/image-effects.ts",
+        "src/js/logic/scanner-effect-page.ts"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We have two simple functions — applyGreyscale and applyInvertColors in image-effects.ts — that iterate all pixels. They're small but called on every page of multi-hundred-page PDFs. Can you add these to a WASM module alongside any other pixel processing? I'd rather have one WASM crate for all image effects than separate ones per function.",
+      "expected_output": "A single unified bentopdf-image-effects-wasm crate that exports multiple functions: apply_greyscale, apply_invert, apply_color_adjustments, apply_scanner_processing. One loader, one WasmProvider entry. The Rust crate should be organized with separate modules internally but present a single WASM package.",
+      "files": [
+        "src/js/utils/image-effects.ts"
+      ]
+    }
+  ]
+}

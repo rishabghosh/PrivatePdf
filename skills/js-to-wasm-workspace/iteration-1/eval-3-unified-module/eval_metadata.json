@@ -1,0 +1,27 @@
+{
+  "eval_id": 3,
+  "eval_name": "unified-image-effects-module",
+  "prompt": "We have two simple functions — applyGreyscale and applyInvertColors in image-effects.ts — that iterate all pixels. They're small but called on every page of multi-hundred-page PDFs. Can you add these to a WASM module alongside any other pixel processing? I'd rather have one WASM crate for all image effects than separate ones per function.",
+  "assertions": [
+    {
+      "text": "Creates a SINGLE Rust crate (not multiple) that exports all image effect functions",
+      "type": "architecture_check"
+    },
+    {
+      "text": "Exports at minimum: apply_greyscale, apply_invert, apply_color_adjustments, apply_scanner_processing",
+      "type": "api_check"
+    },
+    {
+      "text": "One TypeScript loader and one WasmProvider entry for the unified module",
+      "type": "integration_check"
+    },
+    {
+      "text": "Rust code is organized into internal modules (e.g., mod greyscale, mod color) but compiled as single crate",
+      "type": "structure_check"
+    },
+    {
+      "text": "Handles the multi-hundred-page use case — discusses or implements batch processing / streaming",
+      "type": "performance_check"
+    }
+  ]
+}
